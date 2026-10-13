@@ -301,3 +301,78 @@
   transition: color var(--trans);
   user-select: none;
 }
+
+/* ── Estilos QoL: Contraseña y Recordar sesión ── */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrapper .login-input {
+  padding-right: 44px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+  transition: color var(--trans), background var(--trans);
+}
+
+.password-toggle-btn:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.password-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  margin-top: -6px;
+  margin-bottom: 2px;
+}
+
+.checkbox-row input[type="checkbox"] {
+  accent-color: var(--garnet);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.checkbox-label {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  transition: color var(--trans);
+}
+
+.checkbox-row:hover .checkbox-label {
+  color: var(--text-primary);
+}
+
+.submit-btn:disabled,
+.cancel-btn:disabled,
+.login-input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  pointer-events: none;
+}

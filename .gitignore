@@ -42,3 +42,26 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Firebase local files
+.firebase/
+firebase-debug.log
+Te quedaría, al final:
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Firebase local files
+.firebase/
+firebase-debug.log

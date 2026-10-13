@@ -1,6 +1,6 @@
 import { Component, computed, HostListener, inject, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { addDoc, collection, getFirestore } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { app } from '../../firebase.config';
 import { DiaryService } from '../../services/diary.service';
 import { Entry } from '../../interfaces/entry.interface';
@@ -8,7 +8,9 @@ import { frases } from './frases';
 import { AuthService } from '../../services/auth.service';
 import { PreferencesService } from '../../services/preference.service';
 import { CryptoService } from '../../services/crypto.service';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { ToastService } from '../../services/toast.service';
+import { SpinnerComponent } from '../../components/spinner/spinner.component';
+import { onAuthStateChanged } from 'firebase/auth';
 import { Router } from '@angular/router';
 
 type CalendarCell =
@@ -21,6 +23,16 @@ interface CalendarMonth {
   month: number;
   label: string;
   cells: CalendarCell[];
+}
+
+interface DatePickerCell {
+  year: number;
+  month: number;
+  day: number;
+  isCurrentMonth: boolean;
+  isSelected: boolean;
+  isToday: boolean;
+  hasEntry: boolean;
 }
 
 interface SearchResult {
@@ -42,7 +54,7 @@ const CALENDAR_SCROLL_THRESHOLD = 300;
 
 @Component({
   selector: 'app-diary-component',
-  imports: [DatePipe],
+  imports: [DatePipe, SpinnerComponent],
   templateUrl: './diaryComponent.html',
   styleUrls: ['./diaryComponent.css', './diaryComponentCushy.css'],
   host: { '[class.cushy-theme]': 'cushyTheme()' },
@@ -56,6 +68,7 @@ export class DiaryComponent implements OnInit {
   private readonly crypto = inject(CryptoService);
   private readonly diaryService = inject(DiaryService);
   private readonly auth = inject(AuthService);
+  private readonly toast = inject(ToastService);
   private readonly db = getFirestore(app);
 
   readonly cushyTheme = computed(() => this.prefs.theme() === 'cushy');
@@ -63,6 +76,12 @@ export class DiaryComponent implements OnInit {
   readonly keepSession = computed(() => this.prefs.keepSession());
   readonly userPhotoURL = signal<string | null>(null);
   readonly profileMenuOpen = signal(false);
+
+  // Estados de carga y acción (QoL)
+  readonly isLoadingEntries = signal(true);
+  readonly isSaving = signal(false);
+  readonly isDeleting = signal(false);
+  readonly showDeleteConfirm = signal(false);
 
   get drawerView() { return this.prefs.drawerView(); }
 
@@ -75,6 +94,14 @@ export class DiaryComponent implements OnInit {
   readonly entryDateISO = signal(this.getTodayISO());
   selectedMood = 0;
 
+  // Descripciones de estado de ánimo limpias (sin emojis para texto elegante)
+  readonly moodDescriptions = ['', 'Muy difícil', 'Difícil', 'Normal', 'Bueno', 'Excelente'];
+
+  // ── Custom Datepicker Estado ──
+  readonly datePickerOpen = signal(false);
+  readonly pickerYear = signal(new Date().getFullYear());
+  readonly pickerMonth = signal(new Date().getMonth());
+
   readonly modalEntry = signal<Entry | null>(null);
   readonly editingEntry = signal<Entry | null>(null);
   readonly modalIsNew = signal(false);
@@ -83,6 +110,101 @@ export class DiaryComponent implements OnInit {
   readonly visibleMonthCount = signal(CALENDAR_LAZY_BATCH);
 
   readonly searchQuery = signal('');
+
+  readonly charCount = computed(() => this.entryText().length);
+  readonly wordCount = computed(() => {
+    const text = this.entryText().trim();
+    return text ? text.split(/\s+/).length : 0;
+  });
+
+  readonly isTodaySelected = computed(() => this.entryDateISO() === this.getTodayISO());
+
+  readonly formattedSelectedDate = computed(() => {
+    const iso = this.entryDateISO();
+    const [y, m, d] = iso.split('-').map(Number);
+    if (!y || !m || !d) return iso;
+    return `${d} de ${MONTH_NAMES[m - 1]} de ${y}`;
+  });
+
+  readonly pickerMonthLabel = computed(() => {
+    return `${MONTH_NAMES[this.pickerMonth()]} ${this.pickerYear()}`;
+  });
+
+  readonly pickerCells = computed<DatePickerCell[]>(() => {
+    const year = this.pickerYear();
+    const month = this.pickerMonth();
+    const today = new Date();
+    const selectedIso = this.entryDateISO();
+    const [selY, selM, selD] = selectedIso.split('-').map(Number);
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7; // Lunes = 0
+
+    const prevMonthDays = new Date(year, month, 0).getDate();
+
+    const entriesSet = new Set(
+      this.entries()
+        .filter(e => (e.entry ?? '').trim().length > 0)
+        .map(e => `${e.date.getFullYear()}-${e.date.getMonth()}-${e.date.getDate()}`)
+    );
+
+    const cells: DatePickerCell[] = [];
+
+    // Días del mes anterior (lead)
+    for (let i = firstWeekday - 1; i >= 0; i--) {
+      const day = prevMonthDays - i;
+      const prevM = month === 0 ? 11 : month - 1;
+      const prevY = month === 0 ? year - 1 : year;
+      cells.push({
+        year: prevY,
+        month: prevM,
+        day,
+        isCurrentMonth: false,
+        isSelected: false,
+        isToday: false,
+        hasEntry: entriesSet.has(`${prevY}-${prevM}-${day}`),
+      });
+    }
+
+    // Días del mes actual
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isSel = selY === year && selM === month + 1 && selD === day;
+      const isTod =
+        today.getFullYear() === year &&
+        today.getMonth() === month &&
+        today.getDate() === day;
+
+      cells.push({
+        year,
+        month,
+        day,
+        isCurrentMonth: true,
+        isSelected: isSel,
+        isToday: isTod,
+        hasEntry: entriesSet.has(`${year}-${month}-${day}`),
+      });
+    }
+
+    // Días del mes siguiente (trail) para completar filas
+    const remaining = 7 - (cells.length % 7);
+    if (remaining < 7) {
+      for (let day = 1; day <= remaining; day++) {
+        const nextM = month === 11 ? 0 : month + 1;
+        const nextY = month === 11 ? year + 1 : year;
+        cells.push({
+          year: nextY,
+          month: nextM,
+          day,
+          isCurrentMonth: false,
+          isSelected: false,
+          isToday: false,
+          hasEntry: entriesSet.has(`${nextY}-${nextM}-${day}`),
+        });
+      }
+    }
+
+    return cells;
+  });
 
   readonly calendarMonths = computed<CalendarMonth[]>(() => this.buildCalendar());
   readonly visibleMonths = computed(() =>
@@ -108,9 +230,18 @@ export class DiaryComponent implements OnInit {
   private readonly loggedUser = this.auth.getCurrentUser();
 
   async ngOnInit() {
-    await this.auth.waitForAuthReady();
-    await this.crypto.restoreKey();
-    await this.getEntries();
+    this.isLoadingEntries.set(true);
+
+    try {
+      await this.auth.waitForAuthReady();
+      await this.crypto.restoreKey();
+      await this.getEntries();
+    } catch (err) {
+      console.error('Error inicializando el diario:', err);
+      this.toast.error('No se pudieron recuperar tus entradas cifradas.', 'Error de inicialización');
+    } finally {
+      this.isLoadingEntries.set(false);
+    }
 
     this.motivPhrase.set(frases[Math.floor(Math.random() * frases.length)]);
 
@@ -136,30 +267,85 @@ export class DiaryComponent implements OnInit {
       this.entries.set(updatedEntries);
     } catch (error) {
       console.error('Error obteniendo las entradas:', error);
-
-      // Si la clave aún no está disponible (p. ej. el usuario cerró
-      // el navegador y sessionStorage se vació), no hay nada que
-      // mostrar. Aquí podrías abrir un modal de "desbloquear".
     }
   }
 
-  async onSave() {
+  // ── Datepicker métodos ──
+  toggleDatePicker(event?: Event): void {
+    if (this.editingEntry() !== null || this.isSaving()) return;
+    if (event) event.stopPropagation();
+
+    if (!this.datePickerOpen()) {
+      const [y, m] = this.entryDateISO().split('-').map(Number);
+      if (y && m) {
+        this.pickerYear.set(y);
+        this.pickerMonth.set(m - 1);
+      }
+      this.datePickerOpen.set(true);
+    } else {
+      this.datePickerOpen.set(false);
+    }
+  }
+
+  closeDatePicker(): void {
+    this.datePickerOpen.set(false);
+  }
+
+  prevPickerMonth(event: Event): void {
+    event.stopPropagation();
+    if (this.pickerMonth() === 0) {
+      this.pickerMonth.set(11);
+      this.pickerYear.update(y => y - 1);
+    } else {
+      this.pickerMonth.update(m => m - 1);
+    }
+  }
+
+  nextPickerMonth(event: Event): void {
+    event.stopPropagation();
+    if (this.pickerMonth() === 11) {
+      this.pickerMonth.set(0);
+      this.pickerYear.update(y => y + 1);
+    } else {
+      this.pickerMonth.update(m => m + 1);
+    }
+  }
+
+  selectPickerDate(year: number, month: number, day: number, event?: Event): void {
+    if (event) event.stopPropagation();
+    const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    this.entryDateISO.set(iso);
+    this.closeDatePicker();
+  }
+
+  async onSave(): Promise<void> {
     const mood = this.selectedMood;
-    const text = this.entryText();
+    const text = this.entryText().trim();
     const dateISO = this.entryDateISO();
     const editing = this.editingEntry();
 
-    if (mood === 0) return;
-    if (!editing && this.dateAlreadyHasEntry()) return;
-
-    if (!this.crypto.isUnlocked()) {
-      console.error('La clave de cifrado no está desbloqueada.');
+    if (mood === 0) {
+      this.toast.warning('Por favor selecciona cómo te sientes hoy (de 1 a 5 estrellas).', 'Ánimo requerido');
       return;
     }
 
-    // ¿Ya existe una entrada (aunque sea la vacía que crea
-    // fillMissingDays) para esta fecha? Si sí, editamos esa en
-    // lugar de crear una nueva → evita el duplicado.
+    if (!text) {
+      this.toast.warning('Escribe unas palabras sobre tu día antes de guardar.', 'Entrada vacía');
+      return;
+    }
+
+    if (!editing && this.dateAlreadyHasEntry()) {
+      this.toast.warning('Ya existe una entrada registrada para esta fecha.', 'Fecha ocupada');
+      return;
+    }
+
+    if (!this.crypto.isUnlocked()) {
+      this.toast.error('La clave de cifrado no está disponible. Inicia sesión nuevamente.', 'Error de cifrado');
+      return;
+    }
+
+    this.isSaving.set(true);
+
     const [y, m, d] = dateISO.split('-').map(Number);
     const existingOnDate = this.entries().find(e => {
       const ed = e.date;
@@ -174,14 +360,17 @@ export class DiaryComponent implements OnInit {
       if (editing) {
         await this.diaryService.editEntry({ ...editing, entry: text, mood });
         this.editingEntry.set(null);
+        this.toast.success('Entrada actualizada correctamente.', 'Guardado');
       } else if (existingOnDate) {
         await this.diaryService.editEntry({
           ...existingOnDate,
           entry: text,
           mood,
         });
+        this.toast.success('Entrada actualizada correctamente.', 'Guardado');
       } else {
         await this.diaryService.addEntry(text, mood, new Date(dateISO));
+        this.toast.success('¡Tu entrada del día se ha guardado con éxito!', 'Día registrado');
       }
 
       this.entryText.set('');
@@ -190,7 +379,10 @@ export class DiaryComponent implements OnInit {
 
       await this.getEntries();
     } catch (error) {
-      console.log(error);
+      console.error('Error al guardar:', error);
+      this.toast.error('Ocurrió un error al guardar tu entrada.', 'Error al guardar');
+    } finally {
+      this.isSaving.set(false);
     }
   }
 
@@ -232,12 +424,16 @@ export class DiaryComponent implements OnInit {
   }
 
   makeshift(entry: Entry) {
+    this.drawerOpen = false;
     this.modalIsNew.set(false);
+    this.showDeleteConfirm.set(false);
     this.modalEntry.set(entry);
   }
 
   openNewEntryModal(year: number, month: number, day: number) {
+    this.drawerOpen = false;
     this.modalIsNew.set(true);
+    this.showDeleteConfirm.set(false);
     this.modalEntry.set({
       id: '',
       uid: '',
@@ -250,6 +446,7 @@ export class DiaryComponent implements OnInit {
   closeEntryModal() {
     this.modalEntry.set(null);
     this.modalIsNew.set(false);
+    this.showDeleteConfirm.set(false);
   }
 
   startEditingEntry() {
@@ -264,8 +461,7 @@ export class DiaryComponent implements OnInit {
     this.selectedMood = entry.mood ?? 0;
     this.editingEntry.set(this.modalIsNew() ? null : entry);
 
-    this.modalEntry.set(null);
-    this.modalIsNew.set(false);
+    this.closeEntryModal();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -274,6 +470,37 @@ export class DiaryComponent implements OnInit {
     this.entryDateISO.set(this.getTodayISO());
     this.entryText.set('');
     this.selectedMood = 0;
+    this.toast.info('Edición cancelada');
+  }
+
+  async confirmDeleteEntry(): Promise<void> {
+    const entry = this.modalEntry();
+    if (!entry?.id) return;
+
+    this.isDeleting.set(true);
+    try {
+      await this.diaryService.deleteEntry(entry.id);
+      this.entries.update(list => list.filter(e => e.id !== entry.id));
+      this.toast.success('Entrada eliminada correctamente.', 'Entrada eliminada');
+      this.closeEntryModal();
+    } catch (error) {
+      console.error('Error al eliminar la entrada:', error);
+      this.toast.error('No se pudo eliminar la entrada.', 'Error al eliminar');
+    } finally {
+      this.isDeleting.set(false);
+      this.showDeleteConfirm.set(false);
+    }
+  }
+
+  resetToToday(): void {
+    const todayISO = this.getTodayISO();
+    this.entryDateISO.set(todayISO);
+    const [y, m] = todayISO.split('-').map(Number);
+    if (y && m) {
+      this.pickerYear.set(y);
+      this.pickerMonth.set(m - 1);
+    }
+    this.toast.info('Fecha restablecida a hoy');
   }
 
   onSearch(value: string) {
@@ -281,7 +508,7 @@ export class DiaryComponent implements OnInit {
   }
 
   onSearchBlur() {
-    setTimeout(() => this.searchQuery.set(''), 120);
+    setTimeout(() => this.searchQuery.set(''), 150);
   }
 
   selectSearchResult(entry: Entry) {
@@ -408,10 +635,19 @@ export class DiaryComponent implements OnInit {
   // ── Preferencias persistentes ────────────────────────
   toggleDarkMode() {
     this.prefs.toggleTheme();
+    const next = this.prefs.theme();
+    this.toast.info(
+      next === 'cushy' ? 'Tema claro (Cushy) activado.' : 'Modo oscuro activado.',
+      'Tema actualizado'
+    );
   }
 
   setDrawerView(view: 'grid' | 'calendar') {
     this.prefs.setDrawerView(view);
+    this.toast.info(
+      view === 'grid' ? 'Vista de cuadrícula seleccionada.' : 'Vista de calendario seleccionada.',
+      'Vista actualizada'
+    );
   }
 
   getTodayISO(): string {
@@ -424,12 +660,11 @@ export class DiaryComponent implements OnInit {
   }
 
   moodColor(mood: number | null | undefined): string {
-    // Sin mood (día vacío): SIN fondo → se ve el panel del drawer
     if (mood == null || mood <= 0) return 'transparent';
 
     const m = Math.max(1, Math.min(5, mood));
     const t = m / 5;
-    const sat = 30 + t * 60;   // arranca en 30% para que se vea amarillo desde mood 1
+    const sat = 30 + t * 60;
     const light = 88 - t * 8;
     return `hsl(50, ${sat}%, ${light}%)`;
   }
@@ -437,12 +672,17 @@ export class DiaryComponent implements OnInit {
   async toggleKeepSession(): Promise<void> {
     const keepSession = !this.prefs.keepSession();
 
-    // Guardamos la preferencia
     this.prefs.setKeepSession(keepSession);
-
-    // Y cambiamos inmediatamente la persistencia de Firebase
     await this.auth.setSessionPersistence(keepSession);
+
+    this.toast.info(
+      keepSession
+        ? 'Permanecerás logueado al cerrar el navegador.'
+        : 'Se te pedirá iniciar sesión cada vez que abras la app.',
+      'Ajustes de sesión'
+    );
   }
+
   toggleProfileMenu() {
     this.profileMenuOpen.update(v => !v);
   }
@@ -457,12 +697,54 @@ export class DiaryComponent implements OnInit {
     if (!target?.closest('.profile-menu-wrapper')) {
       this.closeProfileMenu();
     }
+    if (!target?.closest('.date-wrapper')) {
+      this.closeDatePicker();
+    }
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      if (this.datePickerOpen()) {
+        this.closeDatePicker();
+        return;
+      }
+      if (this.settingsOpen()) {
+        this.closeSettings();
+        return;
+      }
+      if (this.modalEntry()) {
+        this.closeEntryModal();
+        return;
+      }
+      if (this.profileMenuOpen()) {
+        this.closeProfileMenu();
+        return;
+      }
+      if (this.drawerOpen) {
+        this.drawerOpen = false;
+        return;
+      }
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      if (!this.isLoadingEntries() && !this.isSaving()) {
+        event.preventDefault();
+        this.onSave();
+      }
+    }
   }
 
   async logout(): Promise<void> {
     this.closeProfileMenu();
-    await signOut(this.auth.getAuthInstance());
-    await this.router.navigate(['/login']);   // ← tu ruta de login
+    try {
+      await this.auth.logout();
+      this.toast.info('Has cerrado sesión correctamente.', 'Hasta pronto');
+      await this.router.navigate(['/login']);
+    } catch (err) {
+      console.error('Error al cerrar sesión:', err);
+      this.toast.error('Error al cerrar sesión.');
+    }
   }
 
 }

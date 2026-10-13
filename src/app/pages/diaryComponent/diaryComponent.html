@@ -1,314 +1,489 @@
 <div class="page-wrapper">
-  <header class="top-bar">
-    <div class="search-wrapper">
-      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </svg>
-      <input class="search-input" type="text" placeholder="Buscar entradas anteriores..." [value]="searchQuery()"
-        (input)="onSearch($any($event.target).value)" (blur)="onSearchBlur()" />
-
-      @if (searchQuery().trim()) {
-      <div class="search-results">
-        @if (searchResults().length > 0) {
-        @for (result of searchResults(); track result.entry.id) {
-        <button type="button" class="search-result" (mousedown)="selectSearchResult(result.entry)">
-          <div class="search-result-header">
-            <span class="search-result-date">{{ formatDateSpanish(result.entry.date) }}</span>
-            @if (result.entry.mood) {
-            <span class="search-result-mood">
-              @for (star of [1,2,3,4,5]; track star) {
-              <span [class.active]="result.entry.mood >= star">★</span>
-              }
-            </span>
-            }
-          </div>
-          <p class="search-result-snippet">{{ result.before }}<mark class="search-highlight">{{ result.match }}</mark>{{
-            result.after }}</p>
-        </button>
-        }
-        } @else {
-        <div class="search-no-results">Sin resultados para «{{ searchQuery() }}»</div>
-        }
-      </div>
-      }
+  @if (isLoadingEntries()) {
+    <div class="diary-loading-state">
+      <app-spinner size="lg" />
+      <h2 class="diary-loading-title">Cargando tus memorias</h2>
+      <p class="diary-loading-subtitle">Descifrando tus entradas con seguridad de extremo a extremo...</p>
     </div>
-    <div class="account-controls">
-      <button class="icon-btn settings-btn" title="Settings" type="button" (click)="openSettings()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06
-                   a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09
-                   A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83
-                   l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09
-                   A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83
-                   l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09
-                   a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83
-                   l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09
-                   a1.65 1.65 0 0 0-1.51 1z" />
+  } @else {
+    <header class="top-bar">
+      <div class="search-wrapper">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-      </button>
-      <div class="profile-menu-wrapper">
-        <button class="profile-btn" title="Account" type="button" (click)="toggleProfileMenu()"
-          [attr.aria-expanded]="profileMenuOpen()" aria-haspopup="menu">
-          <span class="profile-initials">K</span>
-        </button>
+        <input class="search-input" type="text" placeholder="Buscar entradas anteriores..." [value]="searchQuery()"
+          (input)="onSearch($any($event.target).value)" (blur)="onSearchBlur()" />
 
-        @if (profileMenuOpen()) {
-        <div class="profile-menu" role="menu">
-          <div class="profile-menu-header">
-            <div class="profile-menu-avatar">
-              @if (userPhotoURL()) {
-              <img [src]="userPhotoURL()!" alt="Avatar" />
-              } @else {
-              <span>{{ (username() || 'K').charAt(0).toUpperCase() }}</span>
+        @if (searchQuery().trim()) {
+        <div class="search-results">
+          @if (searchResults().length > 0) {
+            <div class="search-results-meta">
+              <span class="search-results-count">
+                {{ searchResults().length }} {{ searchResults().length === 1 ? 'coincidencia encontrada' : 'coincidencias encontradas' }}
+              </span>
+            </div>
+            <div class="search-results-scrollable">
+              @for (result of searchResults(); track result.entry.id) {
+              <button type="button" class="search-result" (mousedown)="selectSearchResult(result.entry)">
+                <div class="search-result-header">
+                  <span class="search-result-date">{{ formatDateSpanish(result.entry.date) }}</span>
+                  @if (result.entry.mood) {
+                  <span class="search-result-mood">
+                    @for (star of [1,2,3,4,5]; track star) {
+                    <span [class.active]="result.entry.mood >= star">★</span>
+                    }
+                  </span>
+                  }
+                </div>
+                <p class="search-result-snippet">{{ result.before }}<mark class="search-highlight">{{ result.match }}</mark>{{
+                  result.after }}</p>
+              </button>
               }
             </div>
-            <div class="profile-menu-info">
-              <span class="profile-menu-name">{{ username() || 'Invitado' }}</span>
-              <span class="profile-menu-sub">Sesión activa</span>
-            </div>
-          </div>
-
-          <button class="profile-menu-logout" type="button" (click)="logout()" role="menuitem">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            Cerrar sesión
-          </button>
+          } @else {
+            <div class="search-no-results">Sin resultados para «{{ searchQuery() }}»</div>
+          }
         </div>
         }
       </div>
-    </div>
-
-  </header>
-  <main class="entry-card">
-    <p class="welcome">Bienvenido, {{username()}}</p>
-    <p class="welcomeSub">{{motivPhrase()}}</p>
-    <div class="meta-row">
-      <div class="field-group date-group">
-        <label class="field-label" for="entryDate">Fecha</label>
-        <div class="input-wrapper date-wrapper">
-          <input class="date-input" type="date" id="entryDate" #txtDate [value]="entryDateISO()"
-            [disabled]="editingEntry() !== null" (input)="entryDateISO.set($any($event.target).value)" />
-          <svg class="cal-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
+      <div class="account-controls">
+        <button class="icon-btn settings-btn" title="Ajustes" type="button" (click)="openSettings()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06
+                     a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09
+                     A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83
+                     l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09
+                     A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83
+                     l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09
+                     a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83
+                     l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09
+                     a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
-        </div>
-      </div>
-      <div class="field-group mood-group">
-        <label class="field-label">¿Cómo te sientes hoy?</label>
-        <div class="stars" id="starRating">
-          @for (star of [1,2,3,4,5]; track star) {
-          <button type="button" class="star-btn" [class.active]="selectedMood >= star" (click)="selectedMood = star"
-            [attr.aria-label]="'Rate ' + star + ' out of 5'">★</button>
-          }
-        </div>
-      </div>
-    </div>
-    <div class="field-group entry-group">
-      <textarea class="entry-textarea" id="entryText" #txtEntry placeholder="Déjalo salir todo..." [value]="entryText()"
-        (input)="entryText.set($any($event.target).value)"></textarea>
-    </div>
-    @if (editingEntry()) {
-    <div class="edit-actions">
-      <button class="cancel-btn" type="button" (click)="cancelEditing()">Cancelar</button>
-      <button class="submit-btn" type="button" (click)="onSave()">Save edited entry</button>
-    </div>
-    } @else if (dateAlreadyHasEntry()) {
-    <button class="submit-btn submit-btn--disabled" type="button" disabled>
-      Ya existe una entrada para este día
-    </button>
-    } @else {
-    <button class="submit-btn" type="button" (click)="onSave()">Guardar entrada</button>
-    }
-  </main>
-
-  @if (settingsOpen()) {
-  <div class="settings-modal-backdrop" (click)="closeSettings()">
-    <div class="settings-modal" (click)="$event.stopPropagation()">
-      <header class="settings-modal-header">
-        <h2 class="settings-modal-title">Ajustes</h2>
-        <button type="button" class="settings-modal-close" (click)="closeSettings()" aria-label="Cerrar">×</button>
-      </header>
-
-      <div class="settings-modal-body">
-        <!-- ── Temas ─────────────────────────────────── -->
-        <section class="settings-section">
-          <h3 class="settings-section-title">Temas</h3>
-
-          <div class="settings-row">
-            <div class="settings-row-label">
-              <span class="settings-row-title">Modo oscuro</span>
-              <span class="settings-row-desc">Alterna entre el tema claro y el oscuro</span>
-            </div>
-
-            <button type="button" class="theme-toggle" [class.theme-toggle--on]="!darkMode()" (click)="toggleDarkMode()"
-              [attr.aria-pressed]="!darkMode()"
-              [attr.aria-label]="!darkMode() ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'">
-              <span class="theme-toggle-knob">
-                <span class="theme-toggle-icon">{{ !darkMode() ? '☀' : '☾' }}</span>
-              </span>
-            </button>
-          </div>
-        </section>
-
-        <!-- ── Preferencias ──────────────────────────── -->
-        <section class="settings-section settings-section--divided">
-          <h3 class="settings-section-title">Preferencias</h3>
-
-          <div class="settings-row">
-            <div class="settings-row-label">
-              <span class="settings-row-title">Vista de entradas</span>
-              <span class="settings-row-desc">
-                {{ drawerView === 'grid' ? 'Mostrando cuadrícula' : 'Mostrando calendario' }}
-              </span>
-            </div>
-
-            <div class="view-toggle">
-              <button type="button" class="view-btn" [class.view-btn--active]="drawerView === 'grid'"
-                (click)="setDrawerView('grid')" title="Vista cuadrícula" aria-label="Vista cuadrícula">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="7" height="7" />
-                  <rect x="14" y="3" width="7" height="7" />
-                  <rect x="3" y="14" width="7" height="7" />
-                  <rect x="14" y="14" width="7" height="7" />
-                </svg>
-              </button>
-              <button type="button" class="view-btn" [class.view-btn--active]="drawerView === 'calendar'"
-                (click)="setDrawerView('calendar')" title="Vista calendario" aria-label="Vista calendario">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-label">
-              <span class="settings-row-title">Mantener sesión iniciada</span>
-              <span class="settings-row-desc">
-                {{ keepSession()
-                ? 'Permanecerás logueado al cerrar el navegador'
-                : 'Se te pedirá iniciar sesión cada vez' }}
-              </span>
-            </div>
-
-            <button type="button" class="theme-toggle" [class.theme-toggle--on]="keepSession()"
-              (click)="toggleKeepSession()" [attr.aria-pressed]="keepSession()"
-              [attr.aria-label]="keepSession() ? 'Desactivar sesión persistente' : 'Activar sesión persistente'">
-              <span class="theme-toggle-knob">
-                <span class="theme-toggle-icon">{{ keepSession() ? '🔒' : '🔓' }}</span>
-              </span>
-            </button>
-          </div>
-        </section>
-      </div>
-    </div>
-  </div>
-  }
-
-  @if (modalEntry(); as entry) {
-  <div class="entry-modal-backdrop" (click)="closeEntryModal()">
-    <div class="entry-modal" (click)="$event.stopPropagation()">
-      <header class="entry-modal-header">
-        <span class="entry-modal-date">{{ entry.date | date:'dd/MM/yyyy' }}</span>
-        <button type="button" class="entry-modal-close" (click)="closeEntryModal()" aria-label="Close">×</button>
-      </header>
-
-      <div class="entry-modal-body">
-        <div class="entry-modal-mood">
-          @for (star of [1,2,3,4,5]; track star) {
-          <span class="modal-star" [class.active]="(entry.mood ?? 0) >= star">★</span>
-          }
-        </div>
-
-        <p class="entry-modal-text">{{ entry.entry || '(sin texto)' }}</p>
-      </div>
-
-      <button type="button" class="entry-modal-edit-btn" (click)="startEditingEntry()">
-        Edit entry
-      </button>
-    </div>
-  </div>
-  }
-
-  <div class="drawer-shell" [class.drawer-open]="drawerOpen" (mouseenter)="drawerOpen = true"
-    (mouseleave)="drawerOpen = false">
-    <button class="drawer-tab" type="button" (click)="drawerOpen = !drawerOpen" aria-label="Toggle entries drawer">
-      <span class="drawer-tab-notch"></span>
-    </button>
-    <div class="drawer-panel">
-      <div class="drawer-toolbar">
-        <span class="drawer-title">Entries</span>
-      </div>
-
-      @if (drawerView === 'grid') {
-      <div class="entries-grid">
-        @for (entry of entries(); track $index) {
-        <div class="entry-slot">
-          <button class="entry-book" type="button" (click)="makeshift(entry)" [title]="entry.entry || ''"
-            [class.entry-book--empty]="!entry.entry" [class.entry-book--mood]="!!entry.mood && entry.mood > 0"
-            [style.background]="moodColor(entry.mood)">
-            <span class="entry-book-date-center">{{ formatDateSpanish(entry.date) }}</span>
+        </button>
+        <div class="profile-menu-wrapper">
+          <button class="profile-btn" title="Cuenta" type="button" (click)="toggleProfileMenu()"
+            [attr.aria-expanded]="profileMenuOpen()" aria-haspopup="menu">
+            <span class="profile-initials">{{ (username() || 'K').charAt(0).toUpperCase() }}</span>
           </button>
-          <span class="entry-book-date">{{ entry.date | date:'dd/MM' }}</span>
+
+          @if (profileMenuOpen()) {
+          <div class="profile-menu" role="menu">
+            <div class="profile-menu-header">
+              <div class="profile-menu-avatar">
+                @if (userPhotoURL()) {
+                <img [src]="userPhotoURL()!" alt="Avatar" />
+                } @else {
+                <span>{{ (username() || 'K').charAt(0).toUpperCase() }}</span>
+                }
+              </div>
+              <div class="profile-menu-info">
+                <span class="profile-menu-name">{{ username() || 'Invitado' }}</span>
+                <span class="profile-menu-sub">Sesión activa</span>
+              </div>
+            </div>
+
+            <button class="profile-menu-logout" type="button" (click)="logout()" role="menuitem">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Cerrar sesión
+            </button>
+          </div>
+          }
+        </div>
+      </div>
+    </header>
+
+    <main class="entry-card">
+      <p class="welcome">Bienvenido, {{username()}}</p>
+      <p class="welcomeSub">{{motivPhrase()}}</p>
+
+      <div class="meta-row">
+        <!-- ── Selector de Fecha con Calendario Themed ── -->
+        <div class="field-group date-group">
+          <div class="field-label-row">
+            <label class="field-label" for="entryDate">Fecha</label>
+            @if (!isTodaySelected() && !editingEntry()) {
+              <button type="button" class="today-shortcut-btn" (click)="resetToToday()" title="Volver a la fecha de hoy">
+                Volver a hoy
+              </button>
+            }
+          </div>
+          <div class="input-wrapper date-wrapper">
+            <button
+              type="button"
+              class="date-input-btn"
+              id="entryDate"
+              (click)="toggleDatePicker($event)"
+              [disabled]="editingEntry() !== null || isSaving()"
+              [title]="'Cambiar fecha: ' + formattedSelectedDate()"
+            >
+              <span class="date-input-text">{{ formattedSelectedDate() }}</span>
+              <svg class="cal-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+            </button>
+
+            <!-- Popup de Calendario Personalizado con Estética Kleio -->
+            @if (datePickerOpen()) {
+              <div class="custom-datepicker-popup" (click)="$event.stopPropagation()">
+                <div class="datepicker-header">
+                  <button type="button" class="datepicker-nav-btn" (click)="prevPickerMonth($event)" aria-label="Mes anterior">
+                    ‹
+                  </button>
+                  <span class="datepicker-month-label">{{ pickerMonthLabel() }}</span>
+                  <button type="button" class="datepicker-nav-btn" (click)="nextPickerMonth($event)" aria-label="Mes siguiente">
+                    ›
+                  </button>
+                </div>
+
+                <div class="datepicker-weekdays">
+                  <span>L</span><span>M</span><span>X</span><span>J</span>
+                  <span>V</span><span>S</span><span>D</span>
+                </div>
+
+                <div class="datepicker-grid">
+                  @for (cell of pickerCells(); track $index) {
+                    <button
+                      type="button"
+                      class="datepicker-day-btn"
+                      [class.datepicker-day--other-month]="!cell.isCurrentMonth"
+                      [class.datepicker-day--selected]="cell.isSelected"
+                      [class.datepicker-day--today]="cell.isToday"
+                      [class.datepicker-day--has-entry]="cell.hasEntry"
+                      (click)="selectPickerDate(cell.year, cell.month, cell.day, $event)"
+                    >
+                      <span class="datepicker-day-num">{{ cell.day }}</span>
+                      @if (cell.hasEntry && !cell.isSelected) {
+                        <span class="datepicker-entry-dot"></span>
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- ── Calificación de Ánimo con texto a la izquierda sin mover título ni estrellas ── -->
+        <div class="field-group mood-group">
+          @if (selectedMood > 0) {
+            <span class="mood-rating-text">{{ moodDescriptions[selectedMood] }}</span>
+          }
+          <div class="mood-title-stars-wrapper">
+            <label class="field-label">¿Cómo te sientes hoy?</label>
+            <div class="stars" id="starRating">
+              @for (star of [1,2,3,4,5]; track star) {
+              <button
+                type="button"
+                class="star-btn"
+                [class.active]="selectedMood >= star"
+                (click)="selectedMood = star"
+                [disabled]="isSaving()"
+                [title]="moodDescriptions[star]"
+                [attr.aria-label]="'Puntuar ' + star + ' de 5: ' + moodDescriptions[star]"
+              >★</button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group entry-group">
+        <textarea
+          class="entry-textarea"
+          id="entryText"
+          #txtEntry
+          placeholder="Déjalo salir todo..."
+          [value]="entryText()"
+          [disabled]="isSaving()"
+          (input)="entryText.set($any($event.target).value)"
+        ></textarea>
+        <div class="textarea-footer">
+          <span class="char-count">{{ wordCount() }} palabras · {{ charCount() }} caracteres</span>
+          <span class="shortcut-hint" title="Atajo de teclado">Ctrl + Enter para guardar</span>
+        </div>
+      </div>
+
+      @if (editingEntry()) {
+      <div class="edit-actions">
+        <button class="cancel-btn" type="button" (click)="cancelEditing()" [disabled]="isSaving()">Cancelar</button>
+        <button class="submit-btn" type="button" (click)="onSave()" [disabled]="isSaving()">
+          @if (isSaving()) {
+            <app-spinner size="sm" label="Guardando cambios..." />
+          } @else {
+            Guardar cambios
+          }
+        </button>
+      </div>
+      } @else if (dateAlreadyHasEntry()) {
+      <button class="submit-btn submit-btn--disabled" type="button" disabled>
+        Ya existe una entrada para este día
+      </button>
+      } @else {
+      <button class="submit-btn" type="button" (click)="onSave()" [disabled]="isSaving()">
+        @if (isSaving()) {
+          <app-spinner size="sm" label="Guardando entrada..." />
+        } @else {
+          Guardar entrada
+        }
+      </button>
+      }
+    </main>
+
+    @if (settingsOpen()) {
+    <div class="settings-modal-backdrop" (click)="closeSettings()">
+      <div class="settings-modal" (click)="$event.stopPropagation()">
+        <header class="settings-modal-header">
+          <h2 class="settings-modal-title">Ajustes</h2>
+          <button type="button" class="settings-modal-close" (click)="closeSettings()" aria-label="Cerrar">×</button>
+        </header>
+
+        <div class="settings-modal-body">
+          <!-- ── Temas ─────────────────────────────────── -->
+          <section class="settings-section">
+            <h3 class="settings-section-title">Temas</h3>
+
+            <div class="settings-row">
+              <div class="settings-row-label">
+                <span class="settings-row-title">Modo oscuro</span>
+                <span class="settings-row-desc">Alterna entre el tema claro y el oscuro</span>
+              </div>
+
+              <button type="button" class="theme-toggle" [class.theme-toggle--on]="!darkMode()" (click)="toggleDarkMode()"
+                [attr.aria-pressed]="!darkMode()"
+                [attr.aria-label]="!darkMode() ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'">
+                <span class="theme-toggle-knob">
+                  <span class="theme-toggle-icon">{{ !darkMode() ? '☀' : '☾' }}</span>
+                </span>
+              </button>
+            </div>
+          </section>
+
+          <!-- ── Preferencias ──────────────────────────── -->
+          <section class="settings-section settings-section--divided">
+            <h3 class="settings-section-title">Preferencias</h3>
+
+            <div class="settings-row">
+              <div class="settings-row-label">
+                <span class="settings-row-title">Vista de entradas</span>
+                <span class="settings-row-desc">
+                  {{ drawerView === 'grid' ? 'Mostrando cuadrícula' : 'Mostrando calendario' }}
+                </span>
+              </div>
+
+              <div class="view-toggle">
+                <button type="button" class="view-btn" [class.view-btn--active]="drawerView === 'grid'"
+                  (click)="setDrawerView('grid')" title="Vista cuadrícula" aria-label="Vista cuadrícula">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                  </svg>
+                </button>
+                <button type="button" class="view-btn" [class.view-btn--active]="drawerView === 'calendar'"
+                  (click)="setDrawerView('calendar')" title="Vista calendario" aria-label="Vista calendario">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-label">
+                <span class="settings-row-title">Mantener sesión iniciada</span>
+                <span class="settings-row-desc">
+                  {{ keepSession()
+                  ? 'Permanecerás logueado al cerrar el navegador'
+                  : 'Se te pedirá iniciar sesión cada vez' }}
+                </span>
+              </div>
+
+              <button type="button" class="theme-toggle" [class.theme-toggle--on]="keepSession()"
+                (click)="toggleKeepSession()" [attr.aria-pressed]="keepSession()"
+                [attr.aria-label]="keepSession() ? 'Desactivar sesión persistente' : 'Activar sesión persistente'">
+                <span class="theme-toggle-knob">
+                  <span class="theme-toggle-icon">{{ keepSession() ? '🔒' : '🔓' }}</span>
+                </span>
+              </button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- ── Modal de Entrada Antigua / Detalle ── -->
+    @if (modalEntry(); as entry) {
+    <div class="entry-modal-backdrop" (click)="closeEntryModal()">
+      <div class="entry-modal" (click)="$event.stopPropagation()">
+        <header class="entry-modal-header">
+          <span class="entry-modal-date">{{ entry.date | date:'dd/MM/yyyy' }}</span>
+          <button type="button" class="entry-modal-close" (click)="closeEntryModal()" aria-label="Close">×</button>
+        </header>
+
+        <div class="entry-modal-body">
+          <div class="entry-modal-mood">
+            @for (star of [1,2,3,4,5]; track star) {
+            <span class="modal-star" [class.active]="(entry.mood ?? 0) >= star">★</span>
+            }
+            @if (entry.mood && moodDescriptions[entry.mood]) {
+              <span class="modal-mood-text">{{ moodDescriptions[entry.mood] }}</span>
+            }
+          </div>
+
+          <p class="entry-modal-text">{{ entry.entry || '(sin texto registrado para este día)' }}</p>
+
+          <!-- Warning con estilo integrado a la página -->
+          @if (showDeleteConfirm()) {
+            <div class="delete-confirm-box">
+              <div class="delete-confirm-header">
+                <svg class="delete-confirm-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                <h4 class="delete-confirm-title">¿Eliminar esta entrada?</h4>
+              </div>
+              <p class="delete-confirm-desc">Esta acción borrará de forma permanente el texto y la valoración de este día.</p>
+              <div class="delete-confirm-actions">
+                <button type="button" class="delete-cancel-btn" (click)="showDeleteConfirm.set(false)" [disabled]="isDeleting()">
+                  Cancelar
+                </button>
+                <button type="button" class="delete-action-btn" (click)="confirmDeleteEntry()" [disabled]="isDeleting()">
+                  @if (isDeleting()) {
+                    <app-spinner size="sm" label="Eliminando..." />
+                  } @else {
+                    Confirmar eliminación
+                  }
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Botón Split Integrado: "Eliminar" a la izquierda | "Editar entrada" centrado a la derecha -->
+        @if (!showDeleteConfirm()) {
+          <div class="entry-modal-split-btn">
+            @if (entry.id) {
+              <button
+                type="button"
+                class="split-btn-action split-btn-delete"
+                (click)="showDeleteConfirm.set(true)"
+                title="Eliminar entrada"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  <line x1="10" y1="11" x2="10" y2="17" />
+                  <line x1="14" y1="11" x2="14" y2="17" />
+                </svg>
+                <span>Eliminar</span>
+              </button>
+              <span class="split-btn-divider" aria-hidden="true"></span>
+            }
+            <button
+              type="button"
+              class="split-btn-action split-btn-edit"
+              (click)="startEditingEntry()"
+            >
+              {{ modalIsNew() ? 'Escribir entrada' : 'Editar entrada' }}
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+    }
+
+    <div class="drawer-shell" [class.drawer-open]="drawerOpen" (mouseenter)="drawerOpen = true"
+      (mouseleave)="drawerOpen = false">
+      <button class="drawer-tab" type="button" (click)="drawerOpen = !drawerOpen" aria-label="Toggle entries drawer">
+        <span class="drawer-tab-notch"></span>
+      </button>
+      <div class="drawer-panel">
+        <div class="drawer-toolbar">
+          <span class="drawer-title">Entradas registradas ({{ entries().length }})</span>
+        </div>
+
+        @if (entries().length === 0) {
+          <div class="drawer-empty-state">
+            <span class="drawer-empty-icon">📖</span>
+            <p class="drawer-empty-title">Aún no tienes entradas</p>
+            <p class="drawer-empty-subtitle">Escribe tu primer recuerdo de hoy para verlo aquí.</p>
+          </div>
+        }
+
+        @if (drawerView === 'grid') {
+        <div class="entries-grid">
+          @for (entry of entries(); track $index) {
+          <div class="entry-slot">
+            <button class="entry-book" type="button" (click)="makeshift(entry)" [title]="entry.entry || ''"
+              [class.entry-book--empty]="!entry.entry" [class.entry-book--mood]="!!entry.mood && entry.mood > 0"
+              [style.background]="moodColor(entry.mood)">
+              <span class="entry-book-date-center">{{ formatDateSpanish(entry.date) }}</span>
+            </button>
+            <span class="entry-book-date">{{ entry.date | date:'dd/MM' }}</span>
+          </div>
+          }
+        </div>
+        }
+
+        @if (drawerView === 'calendar') {
+        <div class="calendar-view" (scroll)="onCalendarScroll($event)">
+          @for (month of visibleMonths(); track month.year + '-' + month.month) {
+          <section class="calendar-month">
+            <h3 class="calendar-month-header">{{ month.label }}</h3>
+            <div class="calendar-weekdays">
+              <span>L</span><span>M</span><span>X</span><span>J</span>
+              <span>V</span><span>S</span><span>D</span>
+            </div>
+            <div class="calendar-grid">
+              @for (cell of month.cells; track $index) {
+              @if (cell.kind === 'lead') {
+              <div class="calendar-day calendar-day--lead"></div>
+              } @else if (cell.kind === 'trail') {
+              <div class="calendar-day calendar-day--trail"></div>
+              } @else {
+              <button type="button" class="calendar-day" [class.has-entry]="cell.hasEntry"
+                [style.background]="moodColor(cell.entry?.mood)"
+                (click)="cell.entry ? makeshift(cell.entry) : openNewEntryModal(month.year, month.month, cell.dayNumber)">
+                <span class="calendar-day-number">{{ cell.dayNumber }}</span>
+                @if (cell.hasEntry) {
+                <span class="calendar-day-mark">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+                } @else {
+                <span class="calendar-day-question">?</span>
+                }
+              </button>
+              }
+              }
+            </div>
+          </section>
+          }
         </div>
         }
       </div>
-      }
-
-      @if (drawerView === 'calendar') {
-      <div class="calendar-view" (scroll)="onCalendarScroll($event)">
-        @for (month of visibleMonths(); track month.year + '-' + month.month) {
-        <section class="calendar-month">
-          <h3 class="calendar-month-header">{{ month.label }}</h3>
-          <div class="calendar-weekdays">
-            <span>L</span><span>M</span><span>X</span><span>J</span>
-            <span>V</span><span>S</span><span>D</span>
-          </div>
-          <div class="calendar-grid">
-            @for (cell of month.cells; track $index) {
-            @if (cell.kind === 'lead') {
-            <div class="calendar-day calendar-day--lead"></div>
-            } @else if (cell.kind === 'trail') {
-            <div class="calendar-day calendar-day--trail"></div>
-            } @else {
-            <button type="button" class="calendar-day" [class.has-entry]="cell.hasEntry"
-              [style.background]="moodColor(cell.entry?.mood)"
-              (click)="cell.entry ? makeshift(cell.entry) : openNewEntryModal(month.year, month.month, cell.dayNumber)">
-              <span class="calendar-day-number">{{ cell.dayNumber }}</span>
-              @if (cell.hasEntry) {
-              <span class="calendar-day-mark">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </span>
-              } @else {
-              <span class="calendar-day-question">?</span>
-              }
-            </button>
-            }
-            }
-          </div>
-        </section>
-        }
-      </div>
-      }
     </div>
-  </div>
+  }
 </div>

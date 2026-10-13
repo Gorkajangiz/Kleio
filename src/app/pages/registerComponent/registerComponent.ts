@@ -1,42 +1,88 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
 import { Router, RouterLink } from '@angular/router';
 
-type Theme = 'dark' | 'cushy';
+import { AuthService } from '../../services/auth.service';
+import { PreferencesService } from '../../services/preference.service';
+import { ToastService } from '../../services/toast.service';
+import { SpinnerComponent } from '../../components/spinner/spinner.component';
+import { getAuthErrorMessage } from '../../utils/auth-errors';
 
 @Component({
   selector: 'app-register-component',
-  imports: [RouterLink],
+  imports: [RouterLink, SpinnerComponent],
   templateUrl: './registerComponent.html',
   styleUrls: ['./registerComponent.css', './registerComponentCushy.css'],
   host: { '[class.cushy-theme]': 'isCushy()' },
 })
 export class RegisterComponent {
-  authService = inject(AuthService);
-  router = inject(Router);
+  private readonly prefs = inject(PreferencesService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
-  theme = signal<Theme>(this.readStoredTheme());
-  isCushy = computed(() => this.theme() === 'cushy');
+  readonly theme = this.prefs.theme;
+  readonly isCushy = computed(() => this.prefs.theme() === 'cushy');
 
-  toggleTheme() {
-    this.theme.update(t => (t === 'dark' ? 'cushy' : 'dark'));
-    try {
-      localStorage.setItem('kleio-theme', this.isCushy() ? 'cushy' : 'default');
-    } catch { }
+  readonly isLoading = signal(false);
+  readonly showPassword = signal(false);
+  readonly showConfirmPassword = signal(false);
+
+  toggleTheme(): void {
+    this.prefs.toggleTheme();
   }
 
-  onRegister(name: string, email: string, password: string) {
-    this.authService.register(name, email, password)
-      .then(() => this.router.navigate(['/diario']))
-      .catch(err => console.log('error', err));
+  togglePasswordVisibility(): void {
+    this.showPassword.update(v => !v);
   }
 
-  private readStoredTheme(): Theme {
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword.update(v => !v);
+  }
+
+  async onRegister(
+    event: Event,
+    name: string,
+    email: string,
+    pass: string,
+    confirmPass: string
+  ): Promise<void> {
+    event.preventDefault();
+
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+
+    if (!cleanName || !cleanEmail || !pass || !confirmPass) {
+      this.toast.warning('Por favor completa todos los campos requeridos.', 'Campos incompletos');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      this.toast.warning('Introduce un correo electrónico válido.', 'Formato no válido');
+      return;
+    }
+
+    if (pass.length < 6) {
+      this.toast.warning('La contraseña debe tener al menos 6 caracteres.', 'Contraseña corta');
+      return;
+    }
+
+    if (pass !== confirmPass) {
+      this.toast.error('Las contraseñas no coinciden. Por favor, revísalas.', 'Error de verificación');
+      return;
+    }
+
+    this.isLoading.set(true);
+
     try {
-      const stored = localStorage.getItem('kleio-theme');
-      return stored === 'cushy' ? 'cushy' : 'dark';
-    } catch {
-      return 'dark';
+      await this.authService.register(cleanName, cleanEmail, pass);
+      this.toast.success('¡Tu cuenta ha sido creada exitosamente!', 'Bienvenido a Kleio');
+      await this.router.navigate(['/diario']);
+    } catch (err) {
+      console.error('Error al registrar usuario:', err);
+      this.toast.error(getAuthErrorMessage(err), 'Error en el registro');
+    } finally {
+      this.isLoading.set(false);
     }
   }
 }
