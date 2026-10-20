@@ -1,59 +1,63 @@
-# Kleio
+<h1 align="center">Kleio</h1>
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.3.
+<p align="center">
+Un diario virtual
+</p>
 
-## Development server
+<hr/>
 
-To start a local development server, run:
+<h2>📌 Descripción del proyecto</h2>
 
-```bash
-ng serve
-```
+<p>
+Kleio es un diario virtual escrito en TypeScript con Angular y creado como primer proyecto de práctica en la tecnología. Sirve para almacenar entradas diarias hablando sobre tu día, tus sentimientos y tu ánimo, almacenado en una base de datos y accesible solo por ti, totalmente encriptado.</p>
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+<p>Adicionalmente, Kleio también cuenta con una app de móvil en desarrollo, hecha con Capacitor para albergar la web en una pantalla más pequeña. Aún no tiene versión oficial.</p>
 
-## Code scaffolding
+---
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+<h2>🛠️ Características principales</h2>
 
-```bash
-ng generate component component-name
-```
+<ul>
+  <li>Angular, TypeScript, HTML y CSS</li>
+  <li>Diseño con varios temas y moderno</li>
+  <li>Mensajes totalmente encriptados utilizando tu clave personal</li>
+</ul>
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+---
 
-```bash
-ng generate --help
-```
+<h2>🖥️ Capturas de la página</h2>
 
-## Building
+<h3>Login</h3>
+<img src="assets/login.png" width="700"/>
 
-To build the project run:
+<h3>Pantalla principal</h3>
+<img src="assets/principal.png" width="700"/>
 
-```bash
-ng build
-```
+<h3>Pantalla principal (Clara)</h3>
+<img src="assets/principalClaro.png" width="700"/>
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+<h3>Menús</h3>
+<img src="assets/menus.png" width="700"/>
 
-## Running unit tests
+<h3>Ajustes</h3>
+<img src="assets/ajustes.png" width="700"/>
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+<h3>Calendario</h3>
+<img src="assets/calendarioYBuscador.png" width="700"/>
 
-```bash
-ng test
-```
+<h3>Calendario alternativo</h3>
+<img src="assets/calendarioOtro.png" width="700"/>
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
+<h2>🚀 Tecnologías utilizadas</h2>
 
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+<ul>
+  <li>Angular</li>
+  <li>TypeScript</li>
+  <li>HTML</li>
+  <li>CSS</li>
+  <li>NoSQL</li>
+  <li>Firebase</li>
+  <li>Capacitor</li>
+</ul>
