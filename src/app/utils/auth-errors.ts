@@ -1,6 +1,4 @@
-/**
- * Convierte los códigos de error de Firebase Auth a mensajes claros en español.
- */
+
 export function getAuthErrorMessage(error: any): string {
   if (!error) {
     return 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo.';
@@ -39,7 +37,7 @@ export function getAuthErrorMessage(error: any): string {
 
     default:
       if (typeof error.message === 'string' && error.message.includes('Firebase:')) {
-        // Limpia el prefijo técnico si existe
+
         return error.message.replace(/Firebase:\s*/i, '').trim();
       }
       return 'Ha ocurrido un error al procesar tu solicitud. Inténtalo más tarde.';

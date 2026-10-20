@@ -106,8 +106,7 @@
       <p class="welcomeSub">{{motivPhrase()}}</p>
 
       <div class="meta-row">
-        <!-- ── Selector de Fecha con Calendario Themed ── -->
-        <div class="field-group date-group">
+                <div class="field-group date-group">
           <div class="field-label-row">
             <label class="field-label" for="entryDate">Fecha</label>
             @if (!isTodaySelected() && !editingEntry()) {
@@ -135,8 +134,7 @@
               </svg>
             </button>
 
-            <!-- Popup de Calendario Personalizado con Estética Kleio -->
-            @if (datePickerOpen()) {
+                        @if (datePickerOpen()) {
               <div class="custom-datepicker-popup" (click)="$event.stopPropagation()">
                 <div class="datepicker-header">
                   <button type="button" class="datepicker-nav-btn" (click)="prevPickerMonth($event)" aria-label="Mes anterior">
@@ -176,8 +174,7 @@
           </div>
         </div>
 
-        <!-- ── Calificación de Ánimo con texto a la izquierda sin mover título ni estrellas ── -->
-        <div class="field-group mood-group">
+                <div class="field-group mood-group">
           @if (selectedMood > 0) {
             <span class="mood-rating-text">{{ moodDescriptions[selectedMood] }}</span>
           }
@@ -251,8 +248,7 @@
         </header>
 
         <div class="settings-modal-body">
-          <!-- ── Temas ─────────────────────────────────── -->
-          <section class="settings-section">
+                    <section class="settings-section">
             <h3 class="settings-section-title">Temas</h3>
 
             <div class="settings-row">
@@ -271,8 +267,7 @@
             </div>
           </section>
 
-          <!-- ── Preferencias ──────────────────────────── -->
-          <section class="settings-section settings-section--divided">
+                    <section class="settings-section settings-section--divided">
             <h3 class="settings-section-title">Preferencias</h3>
 
             <div class="settings-row">
@@ -330,8 +325,7 @@
     </div>
     }
 
-    <!-- ── Modal de Entrada Antigua / Detalle ── -->
-    @if (modalEntry(); as entry) {
+        @if (modalEntry(); as entry) {
     <div class="entry-modal-backdrop" (click)="closeEntryModal()">
       <div class="entry-modal" (click)="$event.stopPropagation()">
         <header class="entry-modal-header">
@@ -351,8 +345,7 @@
 
           <p class="entry-modal-text">{{ entry.entry || '(sin texto registrado para este día)' }}</p>
 
-          <!-- Warning con estilo integrado a la página -->
-          @if (showDeleteConfirm()) {
+                    @if (showDeleteConfirm()) {
             <div class="delete-confirm-box">
               <div class="delete-confirm-header">
                 <svg class="delete-confirm-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -379,8 +372,7 @@
           }
         </div>
 
-        <!-- Botón Split Integrado: "Eliminar" a la izquierda | "Editar entrada" centrado a la derecha -->
-        @if (!showDeleteConfirm()) {
+                @if (!showDeleteConfirm()) {
           <div class="entry-modal-split-btn">
             @if (entry.id) {
               <button

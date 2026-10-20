@@ -64,7 +64,7 @@
   overflow-x: hidden;
 }
 
-/* ── Top bar ─────────────────────────────────────────── */
+
 .top-bar {
   width: 100%;
   max-width: 1135px;
@@ -118,7 +118,7 @@
   color: var(--garnet-light);
 }
 
-/* ── Account controls ────────────────────────────────── */
+
 .account-controls {
   display: flex;
   align-items: center;
@@ -184,7 +184,7 @@
   line-height: 1;
 }
 
-/* ── Entry card ──────────────────────────────────────── */
+
 .entry-card {
   width: 100%;
   max-width: 1200px;
@@ -225,7 +225,7 @@
   overflow-wrap: break-word;
 }
 
-/* ── Field groups ────────────────────────────────────── */
+
 .field-label {
   display: block;
   margin-bottom: 8px;
@@ -309,7 +309,7 @@
   pointer-events: none;
 }
 
-/* ── Star rating ─────────────────────────────────────── */
+
 .stars {
   display: flex;
   gap: 4px;
@@ -365,7 +365,7 @@
   color: var(--garnet-light);
 }
 
-/* ── Entry textarea ──────────────────────────────────── */
+
 .entry-group {
   flex: 1;
 }
@@ -413,7 +413,7 @@
   background: var(--border-focus);
 }
 
-/* ── Submit button ───────────────────────────────────── */
+
 .submit-btn {
   width: 100%;
   padding: 13px 20px;
@@ -451,9 +451,7 @@
 }
 
 
-/* ════════════════════════════════════════════════════════
-   ENTRIES DRAWER
-   ════════════════════════════════════════════════════════ */
+
 
 .drawer-shell {
   position: fixed;
@@ -477,9 +475,9 @@
   pointer-events: auto;
 }
 
-/* ── Tab handle ──────────────────────────────────────── */
+
 .drawer-tab {
-  width: 300px;
+
   height: var(--drawer-collapsed-h);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -519,7 +517,7 @@
   width: 36px;
 }
 
-/* ── Drawer panel ────────────────────────────────────── */
+
 .drawer-panel {
   width: 66.666%;
   max-width: 1400px;
@@ -541,7 +539,7 @@
   height: var(--drawer-expanded-h);
 }
 
-/* ── Drawer toolbar ──────────────────────────────────── */
+
 .drawer-toolbar {
   display: flex;
   align-items: center;
@@ -601,7 +599,7 @@
   color: #fff;
 }
 
-/* ── Entries grid (bookshelf style) ──────────────────── */
+
 .entries-grid {
   flex: 1;
   width: 100%;
@@ -641,7 +639,7 @@
   background: var(--border-focus);
 }
 
-/* ── Entry slot (book + date underneath) ─────────────── */
+
 .entry-slot {
   display: flex;
   flex-direction: column;
@@ -685,7 +683,7 @@
   transform: translateY(-1px);
 }
 
-/* Interrogación grande detrás del texto en entradas vacías */
+
 .entry-book--empty::before {
   content: '?';
   position: absolute;
@@ -703,7 +701,7 @@
   user-select: none;
 }
 
-/* Texto por defecto: fondo transparente → oscuro sobre claro */
+
 .entry-book-date-center {
   position: relative;
   z-index: 1;
@@ -715,7 +713,7 @@
   padding: 0 4px;
 }
 
-/* Día con mood → fondo amarillo → texto negro */
+
 .entry-book--mood .entry-book-date-center {
   color: #000;
 }
@@ -729,12 +727,12 @@
   text-align: center;
 }
 
-/* ── Calendar placeholder ────────────────────────────── */
+
 .calendar-placeholder {
   flex: 1;
 }
 
-/* ── Calendar view ───────────────────────────────────── */
+
 .calendar-view {
   flex: 1;
   width: 100%;
@@ -765,7 +763,7 @@
   background: var(--border-focus);
 }
 
-/* ── Month block ─────────────────────────────────────── */
+
 .calendar-month {
   width: 100%;
   padding-bottom: 32px;
@@ -786,7 +784,7 @@
   margin-bottom: 14px;
 }
 
-/* ── Weekday header row ──────────────────────────────── */
+
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -806,7 +804,7 @@
   border-bottom: 1px solid var(--border);
 }
 
-/* ── Day grid ────────────────────────────────────────── */
+
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -880,7 +878,7 @@
   color: #000;
 }
 
-/* Centered mark on days with an entry */
+
 .calendar-day-mark {
   position: absolute;
   top: 50%;
@@ -905,7 +903,7 @@
 }
 
 
-/* ── Entry modal ─────────────────────────────────────── */
+
 .entry-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1038,7 +1036,7 @@
   background: var(--garnet-light);
 }
 
-/* ── Edit mode ───────────────────────────────────────── */
+
 .date-input:disabled {
   opacity: 0.65;
   cursor: not-allowed;
@@ -1077,7 +1075,7 @@
   color: var(--text-primary);
 }
 
-/* ── Theme Toggle Button ─────────────────────────────── */
+
 .theme-toggle-btn {
   display: flex;
   align-items: center;
@@ -1105,7 +1103,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
-/* ── Search results dropdown ─────────────────────────── */
+
 .search-results {
   position: absolute;
   top: calc(100% + 8px);
@@ -1246,7 +1244,7 @@
   box-shadow: none;
 }
 
-/* ── Settings modal ──────────────────────────────────── */
+
 .settings-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1571,7 +1569,7 @@
   color: var(--garnet-light);
 }
 
-/* ── Estilos QoL: Loading, Counters, Delete Confirm, Empty State (Cushy Theme) ── */
+
 .diary-loading-state {
   display: flex;
   flex-direction: column;
@@ -1625,7 +1623,7 @@
   color: var(--text-primary);
 }
 
-/* ── Botón Selector de Fecha Themed (Cushy) ── */
+
 .date-input-btn {
   width: 100%;
   padding: 10px 40px 10px 14px;
@@ -1643,26 +1641,26 @@
   transition: border-color var(--trans), box-shadow var(--trans), background var(--trans);
 }
 
-/* Botón que abre el datepicker */
+
 .date-input-btn:hover:not(:disabled) {
   border-color: var(--border-focus);
   background: var(--surface-raised);
-  /* era #fdfdfd */
+
   box-shadow: 0 0 0 3px var(--garnet-glow);
 }
 
-/* Botones ‹ › dentro del datepicker */
+
 .datepicker-nav-btn:hover {
   background: var(--garnet-glow);
-  /* era #f1f5ef */
+
   color: var(--garnet-light);
   border-color: var(--border-focus);
 }
 
-/* Días dentro del datepicker */
+
 .datepicker-day-btn:hover {
   background: var(--garnet-glow);
-  /* era #f1f5ef */
+
   border-color: var(--border-focus);
   color: var(--garnet-light);
 }
@@ -1682,7 +1680,7 @@
   flex: 1;
 }
 
-/* ── Popup de Calendario Custom Themed (Cushy) ── */
+
 .custom-datepicker-popup {
   position: absolute;
   top: calc(100% + 8px);
@@ -1799,7 +1797,7 @@
   bottom: 3px;
 }
 
-/* ── Mood Rating Row con texto a la izquierda a la altura de las estrellas (Cushy) ── */
+
 .mood-rating-container {
   display: flex;
   align-items: center;
@@ -1811,7 +1809,7 @@
   position: absolute;
   right: calc(100% + 14px);
   bottom: 10px;
-  /* alineado con las estrellas */
+
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -1861,7 +1859,7 @@
   cursor: not-allowed;
 }
 
-/* ── Modal de entrada antigua (Cushy) ── */
+
 .modal-mood-text {
   font-size: 14px;
   font-weight: 500;
@@ -1870,7 +1868,7 @@
   user-select: none;
 }
 
-/* ── Botón Split Integrado: Eliminar | Editar entrada (Cushy) ── */
+
 .entry-modal-split-btn {
   display: flex;
   align-items: stretch;
@@ -1936,7 +1934,7 @@
   flex-shrink: 0;
 }
 
-/* ── Aviso de Confirmación Integrado a la estética de Kleio (Cushy) ── */
+
 .delete-confirm-box {
   background: var(--surface);
   border: 1px solid var(--border);

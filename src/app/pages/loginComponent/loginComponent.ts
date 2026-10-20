@@ -62,7 +62,6 @@ export class LoginComponent {
     this.isLoading.set(true);
 
     try {
-      // Aplicar preferencia antes de loguear
       await this.authService.setSessionPersistence(this.keepSession());
 
       await this.authService.login(cleanEmail, pass);

@@ -55,7 +55,7 @@
   padding: 0;
 }
 
-/* ── Card ────────────────────────────────────────────── */
+
 .login-card {
   position: relative;
   width: 100%;
@@ -87,7 +87,7 @@
   }
 }
 
-/* ── Heading ─────────────────────────────────────────── */
+
 .login-title {
   font-family: Georgia, "Times New Roman", serif;
   font-style: italic;
@@ -108,7 +108,7 @@
   margin-bottom: 4px;
 }
 
-/* ── Form fields ─────────────────────────────────────── */
+
 .login-form {
   display: flex;
   flex-direction: column;
@@ -172,7 +172,7 @@
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* ── Buttons ─────────────────────────────────────────── */
+
 .login-actions {
   display: flex;
   flex-direction: column;
@@ -240,7 +240,7 @@
   color: var(--text-primary);
 }
 
-/* ── Theme toggle ────────────────────────────────────── */
+
 .theme-toggle {
   position: absolute;
   top: 18px;
@@ -302,7 +302,7 @@
   user-select: none;
 }
 
-/* ── Estilos QoL: Contraseña y Recordar sesión ── */
+
 .password-input-wrapper {
   position: relative;
   display: flex;

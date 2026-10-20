@@ -34,7 +34,7 @@ export class PreferencesService {
     localStorage.setItem(this.KEEP_SESSION_KEY, String(value));
   }
 
-  // ── Lectura inicial ────────────────────────────────
+
   private readTheme(): AppTheme {
     const stored = localStorage.getItem(this.THEME_KEY);
     return stored === 'cushy' ? 'cushy' : 'dark';
@@ -47,7 +47,7 @@ export class PreferencesService {
 
   private readKeepSession(): boolean {
     const stored = localStorage.getItem(this.KEEP_SESSION_KEY);
-    // Por defecto: sesión permanente
+
     if (stored === null) return true;
     return stored === 'true';
   }

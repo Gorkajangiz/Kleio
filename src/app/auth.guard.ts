@@ -17,16 +17,16 @@ export const authGuard: CanActivateFn = () => {
       const unsubscribe = onAuthStateChanged(
         authService.getAuthInstance(),
         async user => {
-          // 1. Sin usuario → al login
+
           if (!user) {
             subscriber.next(router.createUrlTree(['/login']));
             subscriber.complete();
             return;
           }
 
-          // 2. keepSession=false y esta pestaña NO está marcada
-          //    → significa que el navegador se cerró y reabrió,
-          //    o es una pestaña nueva. Forzamos logout.
+
+
+
           if (!prefs.keepSession() && !authService.isSessionMarked()) {
             console.warn('[AUTH GUARD] keepSession=false sin marca de sesión → logout');
             await authService.logout();
@@ -35,7 +35,7 @@ export const authGuard: CanActivateFn = () => {
             return;
           }
 
-          // 3. Autenticado pero sin master key → forzar login
+
           if (!crypto.isUnlocked()) {
             const restored = await crypto.restoreKey();
             if (!restored) {

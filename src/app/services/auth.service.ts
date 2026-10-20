@@ -46,8 +46,8 @@ export class AuthService {
 
     const credentials = await signInWithEmailAndPassword(this.auth, email, password);
 
-    // 🆕 Marca esta pestaña como "con sesión activa".
-    //    Desaparece al cerrar la pestaña/navegador.
+
+
     sessionStorage.setItem(this.SESSION_FLAG, '1');
 
     await this.crypto.unlock(credentials.user.uid, password);
@@ -62,7 +62,7 @@ export class AuthService {
     await updateProfile(credential.user, { displayName: name });
     await this.crypto.setup(credential.user.uid, password);
 
-    // 🆕 También marcamos la sesión recién creada.
+
     sessionStorage.setItem(this.SESSION_FLAG, '1');
 
     return credential.user;
@@ -76,12 +76,12 @@ export class AuthService {
     return this.auth;
   }
 
-  /** 🆕 ¿Esta pestaña tiene marca de sesión activa? */
+
   isSessionMarked(): boolean {
     return sessionStorage.getItem(this.SESSION_FLAG) === '1';
   }
 
-  /** 🆕 Borra la marca (llamado en logout). */
+
   clearSessionMark(): void {
     sessionStorage.removeItem(this.SESSION_FLAG);
   }
@@ -100,7 +100,7 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
-    this.clearSessionMark();       // 🆕
+    this.clearSessionMark();
     this.crypto.clearKey();
     await this.auth.signOut();
   }

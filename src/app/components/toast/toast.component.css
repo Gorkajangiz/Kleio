@@ -29,7 +29,7 @@
   transition: transform 200ms ease, opacity 200ms ease;
   overflow: hidden;
 
-  /* Estilo base Modo Oscuro */
+
   background: rgba(26, 22, 24, 0.96);
   border: 1px solid #3a2e31;
   color: #e8dde0;
@@ -106,7 +106,7 @@
   height: 14px;
 }
 
-/* ── Tipos en Modo Oscuro ── */
+
 .toast-item--success {
   border-left: 4px solid #34d399;
 }
@@ -135,7 +135,7 @@
   color: #c0455a;
 }
 
-/* ── Modo Cushy (Claro) ── */
+
 :host(.cushy-theme) .toast-item {
   background: rgba(255, 255, 255, 0.98);
   border: 1px solid #e2e8df;

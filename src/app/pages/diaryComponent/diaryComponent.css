@@ -65,7 +65,7 @@
   overflow-x: hidden;
 }
 
-/* ── Top bar ─────────────────────────────────────────── */
+
 .top-bar {
   width: 100%;
   max-width: 1135px;
@@ -118,7 +118,7 @@
   color: var(--garnet-light);
 }
 
-/* ── Account controls ────────────────────────────────── */
+
 .account-controls {
   display: flex;
   align-items: center;
@@ -179,7 +179,7 @@
   line-height: 1;
 }
 
-/* ── Entry card ──────────────────────────────────────── */
+
 .entry-card {
   width: 100%;
   max-width: 1200px;
@@ -219,7 +219,7 @@
   overflow-wrap: break-word;
 }
 
-/* ── Field groups ────────────────────────────────────── */
+
 .field-label {
   display: block;
   margin-bottom: 8px;
@@ -302,7 +302,7 @@
   pointer-events: none;
 }
 
-/* ── Star rating ─────────────────────────────────────── */
+
 .stars {
   display: flex;
   gap: 4px;
@@ -358,7 +358,7 @@
   color: var(--garnet-light);
 }
 
-/* ── Entry textarea ──────────────────────────────────── */
+
 .entry-group {
   flex: 1;
 }
@@ -405,7 +405,7 @@
   background: var(--border-focus);
 }
 
-/* ── Submit button ───────────────────────────────────── */
+
 .submit-btn {
   width: 100%;
   padding: 13px 20px;
@@ -449,9 +449,7 @@
   box-shadow: none;
 }
 
-/* ════════════════════════════════════════════════════════
-   ENTRIES DRAWER
-   ════════════════════════════════════════════════════════ */
+
 
 .drawer-shell {
   position: fixed;
@@ -475,7 +473,7 @@
   pointer-events: auto;
 }
 
-/* ── Tab handle ──────────────────────────────────────── */
+
 .drawer-tab {
   width: 300px;
   height: var(--drawer-collapsed-h);
@@ -517,7 +515,7 @@
   width: 36px;
 }
 
-/* ── Drawer panel ────────────────────────────────────── */
+
 .drawer-panel {
   width: 66.666%;
   max-width: 1400px;
@@ -539,7 +537,7 @@
   height: var(--drawer-expanded-h);
 }
 
-/* ── Drawer toolbar ──────────────────────────────────── */
+
 .drawer-toolbar {
   display: flex;
   align-items: center;
@@ -599,7 +597,7 @@
   color: #fff;
 }
 
-/* ── Entries grid ────────────────────────────────────── */
+
 .entries-grid {
   flex: 1;
   width: 100%;
@@ -639,7 +637,7 @@
   background: var(--border-focus);
 }
 
-/* ── Entry slot ──────────────────────────────────────── */
+
 .entry-slot {
   display: flex;
   flex-direction: column;
@@ -683,7 +681,7 @@
   transform: translateY(-1px);
 }
 
-/* Interrogación grande detrás del texto en entradas vacías */
+
 .entry-book--empty::before {
   content: '?';
   position: absolute;
@@ -701,7 +699,7 @@
   user-select: none;
 }
 
-/* Texto por defecto: fondo transparente → claro sobre oscuro */
+
 .entry-book-date-center {
   position: relative;
   z-index: 1;
@@ -713,7 +711,7 @@
   padding: 0 4px;
 }
 
-/* Día con mood → fondo amarillo → texto negro */
+
 .entry-book--mood .entry-book-date-center {
   color: #000;
 }
@@ -727,7 +725,7 @@
   text-align: center;
 }
 
-/* ── Calendar view ───────────────────────────────────── */
+
 .calendar-view {
   flex: 1;
   width: 100%;
@@ -758,7 +756,7 @@
   background: var(--border-focus);
 }
 
-/* ── Month block ─────────────────────────────────────── */
+
 .calendar-month {
   width: 100%;
   padding-bottom: 32px;
@@ -779,7 +777,7 @@
   margin-bottom: 14px;
 }
 
-/* ── Weekday header row ──────────────────────────────── */
+
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -799,7 +797,7 @@
   border-bottom: 1px solid var(--border);
 }
 
-/* ── Day grid ────────────────────────────────────────── */
+
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -838,7 +836,7 @@
   visibility: hidden;
 }
 
-/* Números: mismo peso para todos */
+
 .calendar-day-number {
   font-size: 17px;
   font-weight: 700;
@@ -847,7 +845,7 @@
   transition: color var(--trans);
 }
 
-/* Día con mood → fondo amarillo → número negro */
+
 .calendar-day.has-entry .calendar-day-number {
   color: #000;
 }
@@ -890,7 +888,7 @@
   stroke: #fff;
 }
 
-/* ── Entry modal ─────────────────────────────────────── */
+
 .entry-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1026,7 +1024,7 @@
   background: var(--garnet-light);
 }
 
-/* ── Edit mode ───────────────────────────────────────── */
+
 .date-input:disabled {
   opacity: 0.65;
   cursor: not-allowed;
@@ -1065,7 +1063,7 @@
   color: var(--text-primary);
 }
 
-/* ── Search results dropdown ─────────────────────────── */
+
 .search-results {
   position: absolute;
   top: calc(100% + 8px);
@@ -1192,7 +1190,7 @@
   color: var(--text-muted);
 }
 
-/* ── Settings modal ──────────────────────────────────── */
+
 .settings-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1517,7 +1515,7 @@
   color: var(--garnet-light);
 }
 
-/* ── Estilos QoL: Loading, Counters, Delete Confirm, Empty State ── */
+
 .diary-loading-state {
   display: flex;
   flex-direction: column;
@@ -1571,7 +1569,7 @@
   color: #fff;
 }
 
-/* ── Botón Selector de Fecha Themed ── */
+
 .date-input-btn {
   width: 100%;
   padding: 10px 40px 10px 14px;
@@ -1609,7 +1607,7 @@
   flex: 1;
 }
 
-/* ── Popup de Calendario Custom Themed ── */
+
 .custom-datepicker-popup {
   position: absolute;
   top: calc(100% + 8px);
@@ -1738,7 +1736,7 @@
   bottom: 3px;
 }
 
-/* ── Mood Rating Row con texto a la izquierda a la altura de las estrellas ── */
+
 .mood-rating-container {
   display: flex;
   align-items: center;
@@ -1750,7 +1748,7 @@
   position: absolute;
   right: calc(100% + 14px);
   bottom: 10px;
-  /* alineado con las estrellas */
+
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -1800,7 +1798,7 @@
   cursor: not-allowed;
 }
 
-/* ── Modal de entrada antigua ── */
+
 .modal-mood-text {
   font-size: 14px;
   font-weight: 500;
@@ -1809,7 +1807,7 @@
   user-select: none;
 }
 
-/* ── Botón Split Integrado: Eliminar | Editar entrada ── */
+
 .entry-modal-split-btn {
   display: flex;
   align-items: stretch;
@@ -1876,7 +1874,7 @@
 }
 
 
-/* ── Aviso de Confirmación Integrado a la estética de Kleio ── */
+
 .delete-confirm-box {
   background: var(--surface-raised);
   border: 1px solid var(--border);

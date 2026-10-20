@@ -17,7 +17,7 @@ export class CryptoService {
 
   private readonly PBKDF2_ITERATIONS = 600_000;
 
-  /** Clave de localStorage para restaurar la master key tras cerrar el navegador. */
+
   private readonly STORAGE_KEY = 'diary.masterKey.v1';
 
   async setup(uid: string, password: string): Promise<void> {
@@ -94,10 +94,7 @@ export class CryptoService {
     }
   }
 
-  /**
-   * Restaura la master key desde localStorage.
-   * @returns true si se restauró correctamente.
-   */
+
   async restoreKey(): Promise<boolean> {
     const stored = localStorage.getItem(this.STORAGE_KEY);
     if (!stored) return false;
@@ -122,7 +119,7 @@ export class CryptoService {
     }
   }
 
-  /** ¿Hay bytes de la master key persistidos? */
+
   hasStoredKey(): boolean {
     return localStorage.getItem(this.STORAGE_KEY) !== null;
   }
@@ -172,7 +169,7 @@ export class CryptoService {
     return new TextDecoder().decode(decrypted);
   }
 
-  /** Elimina la clave de memoria y de localStorage. */
+
   clearKey(): void {
     this.masterKey = null;
     localStorage.removeItem(this.STORAGE_KEY);

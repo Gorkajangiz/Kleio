@@ -77,7 +77,6 @@ export class DiaryComponent implements OnInit {
   readonly userPhotoURL = signal<string | null>(null);
   readonly profileMenuOpen = signal(false);
 
-  // Estados de carga y acción (QoL)
   readonly isLoadingEntries = signal(true);
   readonly isSaving = signal(false);
   readonly isDeleting = signal(false);
@@ -94,10 +93,10 @@ export class DiaryComponent implements OnInit {
   readonly entryDateISO = signal(this.getTodayISO());
   selectedMood = 0;
 
-  // Descripciones de estado de ánimo limpias (sin emojis para texto elegante)
+
   readonly moodDescriptions = ['', 'Muy difícil', 'Difícil', 'Normal', 'Bueno', 'Excelente'];
 
-  // ── Custom Datepicker Estado ──
+
   readonly datePickerOpen = signal(false);
   readonly pickerYear = signal(new Date().getFullYear());
   readonly pickerMonth = signal(new Date().getMonth());
@@ -138,7 +137,7 @@ export class DiaryComponent implements OnInit {
     const [selY, selM, selD] = selectedIso.split('-').map(Number);
 
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7; // Lunes = 0
+    const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
 
     const prevMonthDays = new Date(year, month, 0).getDate();
 
@@ -150,7 +149,7 @@ export class DiaryComponent implements OnInit {
 
     const cells: DatePickerCell[] = [];
 
-    // Días del mes anterior (lead)
+
     for (let i = firstWeekday - 1; i >= 0; i--) {
       const day = prevMonthDays - i;
       const prevM = month === 0 ? 11 : month - 1;
@@ -166,7 +165,7 @@ export class DiaryComponent implements OnInit {
       });
     }
 
-    // Días del mes actual
+
     for (let day = 1; day <= daysInMonth; day++) {
       const isSel = selY === year && selM === month + 1 && selD === day;
       const isTod =
@@ -185,7 +184,7 @@ export class DiaryComponent implements OnInit {
       });
     }
 
-    // Días del mes siguiente (trail) para completar filas
+
     const remaining = 7 - (cells.length % 7);
     if (remaining < 7) {
       for (let day = 1; day <= remaining; day++) {
@@ -270,7 +269,7 @@ export class DiaryComponent implements OnInit {
     }
   }
 
-  // ── Datepicker métodos ──
+
   toggleDatePicker(event?: Event): void {
     if (this.editingEntry() !== null || this.isSaving()) return;
     if (event) event.stopPropagation();
@@ -632,7 +631,7 @@ export class DiaryComponent implements OnInit {
     this.settingsOpen.set(false);
   }
 
-  // ── Preferencias persistentes ────────────────────────
+
   toggleDarkMode() {
     this.prefs.toggleTheme();
     const next = this.prefs.theme();
