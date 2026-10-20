@@ -28,25 +28,25 @@ Kleio es un diario virtual escrito en TypeScript con Angular y creado como prime
 <h2>🖥️ Capturas de la página</h2>
 
 <h3>Login</h3>
-<img src="assets/login.png" width="700"/>
+<img src="src/assets/login.png" width="700"/>
 
 <h3>Pantalla principal</h3>
-<img src="assets/principal.png" width="700"/>
+<img src="src/assets/principal.png" width="700"/>
 
 <h3>Pantalla principal (Clara)</h3>
-<img src="assets/principalClaro.png" width="700"/>
+<img src="src/assets/principalClaro.png" width="700"/>
 
 <h3>Menús</h3>
-<img src="assets/menus.png" width="700"/>
+<img src="src/assets/menus.png" width="700"/>
 
 <h3>Ajustes</h3>
-<img src="assets/ajustes.png" width="700"/>
+<img src="src/assets/ajustes.png" width="700"/>
 
 <h3>Calendario</h3>
-<img src="assets/calendarioYBuscador.png" width="700"/>
+<img src="src/assets/calendarioYBuscador.png" width="700"/>
 
 <h3>Calendario alternativo</h3>
-<img src="assets/calendarioOtro.png" width="700"/>
+<img src="src/assets/calendarioOtro.png" width="700"/>
 
 ---
 
