@@ -1,0 +1,42 @@
+.pin-input {
+  text-align: center;
+  font-size: 28px;
+  letter-spacing: 0.45em;
+  padding: 14px 18px;
+}
+
+.unlock-help {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.form-message {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.form-message--error {
+  color: var(--star-active);
+}
+
+.unlock-logout {
+  align-self: center;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color var(--trans);
+}
+
+.unlock-logout:hover {
+  color: var(--garnet-light);
+}
+
+.unlock-logout:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,235 +1,187 @@
-import { Injectable } from '@angular/core';
-import {
-  doc,
-  getDoc,
-  getFirestore,
-  setDoc
-} from 'firebase/firestore';
+import { inject, Injectable, signal } from '@angular/core';
+import { doc, getDoc, getFirestore, setDoc } from 'firebase/firestore';
 import { app } from '../firebase.config';
+import {
+  CryptoError,
+  PBKDF2_ITERATIONS,
+  WrappedKey,
+  decryptText,
+  encryptText,
+  generateMasterKey,
+  importMasterKey,
+  unwrapMasterKey,
+  wrapMasterKey,
+} from '../utils/crypto';
+import { LocalKeyStore } from './local-key.store';
+
+interface StoredCrypto {
+  recovery?: WrappedKey;
+  salt?: string;
+  iv?: string;
+  wrappedKey?: string;
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CryptoService {
+  private readonly db = getFirestore(app);
+  private readonly localKeys = inject(LocalKeyStore);
 
-  private db = getFirestore(app);
   private masterKey: CryptoKey | null = null;
+  readonly unlocked = signal(false);
 
-  private readonly PBKDF2_ITERATIONS = 600_000;
+  async createRecovery(uid: string, password: string): Promise<void> {
+    const key = await generateMasterKey();
+    const raw = await crypto.subtle.exportKey('raw', key);
 
-
-  private readonly STORAGE_KEY = 'diary.masterKey.v1';
-
-  async setup(uid: string, password: string): Promise<void> {
-    const masterKey = await crypto.subtle.generateKey(
-      { name: 'AES-GCM', length: 256 },
-      true,
-      ['encrypt', 'decrypt']
-    );
-
-    const salt = crypto.getRandomValues(new Uint8Array(16));
-    const wrappingKey = await this.deriveKey(password, salt);
-
-    const masterKeyRaw = await crypto.subtle.exportKey('raw', masterKey);
-
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const ivBuffer = this.toArrayBuffer(iv);
-
-    const wrappedKey = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv: ivBuffer },
-      wrappingKey,
-      masterKeyRaw
-    );
-
-    await setDoc(
-      doc(this.db, 'users', uid),
-      {
-        crypto: {
-          salt: this.arrayToBase64(salt),
-          iv: this.arrayToBase64(iv),
-          wrappedKey: this.arrayToBase64(new Uint8Array(wrappedKey))
-        }
-      }
-    );
-
-    this.masterKey = masterKey;
-    this.persistKeyBytes(masterKeyRaw);
+    await this.writeRecovery(uid, raw, password);
+    await this.useMasterKey(raw);
   }
 
-  async unlock(uid: string, password: string): Promise<void> {
-    const userDoc = await getDoc(doc(this.db, 'users', uid));
-
-    if (!userDoc.exists()) {
-      throw new Error('No existe la configuración de cifrado.');
-    }
-
-    const data = userDoc.data()['crypto'];
-    const salt = this.base64ToArray(data.salt);
-    const iv = this.base64ToArray(data.iv);
-    const wrappedKey = this.base64ToArray(data.wrappedKey);
-
-    const wrappingKey = await this.deriveKey(password, salt);
-
-    try {
-      const ivBuffer = this.toArrayBuffer(iv);
-      const wrappedKeyBuffer = this.toArrayBuffer(wrappedKey);
-
-      const masterKeyRaw = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv: ivBuffer },
-        wrappingKey,
-        wrappedKeyBuffer
+  async unlockWithPin(uid: string, pin: string): Promise<void> {
+    const envelope = this.localKeys.get(uid);
+    if (!envelope) {
+      throw new CryptoError(
+        'PIN_NOT_CONFIGURED',
+        'Este dispositivo todavía no tiene un PIN configurado.'
       );
+    }
 
-      this.masterKey = await crypto.subtle.importKey(
-        'raw',
-        masterKeyRaw,
-        { name: 'AES-GCM' },
-        false,
-        ['encrypt', 'decrypt']
+    const raw = await unwrapMasterKey(envelope, pin);
+    await this.useMasterKey(raw);
+  }
+
+  async recoverWithPassword(uid: string, password: string): Promise<void> {
+    const snapshot = await getDoc(doc(this.db, 'users', uid));
+    if (!snapshot.exists()) {
+      throw new CryptoError(
+        'RECOVERY_NOT_FOUND',
+        'No existe una copia de recuperación para esta cuenta.'
       );
-
-      this.persistKeyBytes(masterKeyRaw);
-    } catch {
-      throw new Error('No se pudo desbloquear la clave de cifrado.');
     }
-  }
 
+    const stored = snapshot.data()['crypto'] as StoredCrypto | undefined;
+    const recovery = stored?.recovery ?? this.legacyRecovery(stored);
 
-  async restoreKey(): Promise<boolean> {
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    if (!stored) return false;
-
-    try {
-      const bytes = this.base64ToArray(stored);
-
-      this.masterKey = await crypto.subtle.importKey(
-        'raw',
-        this.toArrayBuffer(bytes),
-        { name: 'AES-GCM' },
-        false,
-        ['encrypt', 'decrypt']
+    if (!recovery) {
+      throw new CryptoError(
+        'RECOVERY_NOT_FOUND',
+        'No existe una copia de recuperación para esta cuenta.'
       );
-
-      return true;
-    } catch (err) {
-      console.warn('No se pudo restaurar la clave maestra:', err);
-      localStorage.removeItem(this.STORAGE_KEY);
-      this.masterKey = null;
-      return false;
-    }
-  }
-
-
-  hasStoredKey(): boolean {
-    return localStorage.getItem(this.STORAGE_KEY) !== null;
-  }
-
-  async encrypt(text: string): Promise<string> {
-    if (!this.masterKey) {
-      throw new Error('La clave de cifrado no está desbloqueada.');
     }
 
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encoded = new TextEncoder().encode(text);
-
-    const ivBuffer = this.toArrayBuffer(iv);
-    const encodedBuffer = this.toArrayBuffer(encoded);
-
-    const encrypted = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv: ivBuffer },
-      this.masterKey,
-      encodedBuffer
-    );
-
-    const result = new Uint8Array(iv.length + encrypted.byteLength);
-    result.set(iv, 0);
-    result.set(new Uint8Array(encrypted), iv.length);
-
-    return this.arrayToBase64(result);
+    const raw = await unwrapMasterKey(recovery, password);
+    await this.useMasterKey(raw);
   }
 
-  async decrypt(encryptedText: string): Promise<string> {
-    if (!this.masterKey) {
-      throw new Error('La clave de cifrado no está desbloqueada.');
-    }
+  async setPin(uid: string, pin: string): Promise<void> {
+    const raw = await this.exportMasterKey();
+    const wrapped = await wrapMasterKey(raw, pin);
 
-    const data = this.base64ToArray(encryptedText);
-    const iv = data.slice(0, 12);
-    const encrypted = data.slice(12);
-
-    const ivBuffer = this.toArrayBuffer(iv);
-    const encryptedBuffer = this.toArrayBuffer(encrypted);
-
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: ivBuffer },
-      this.masterKey,
-      encryptedBuffer
-    );
-
-    return new TextDecoder().decode(decrypted);
+    this.localKeys.save(uid, {
+      version: 2,
+      ...wrapped,
+      createdAt: Date.now(),
+    });
+    this.clearLegacyStorage();
   }
 
+  async rewrapRecovery(uid: string, password: string): Promise<void> {
+    const raw = await this.exportMasterKey();
+    await this.writeRecovery(uid, raw, password);
+  }
 
-  clearKey(): void {
+  hasLocalPin(uid: string): boolean {
+    return this.localKeys.has(uid);
+  }
+
+  removeLocalPin(uid: string): void {
+    this.localKeys.remove(uid);
+  }
+
+  lock(): void {
     this.masterKey = null;
-    localStorage.removeItem(this.STORAGE_KEY);
+    this.unlocked.set(false);
   }
 
   isUnlocked(): boolean {
     return this.masterKey !== null;
   }
 
-  private async deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
-    const passwordKey = await crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(password),
-      'PBKDF2',
-      false,
-      ['deriveKey']
-    );
+  async encrypt(text: string): Promise<string> {
+    return encryptText(this.requireMasterKey(), text);
+  }
 
-    const saltBuffer = this.toArrayBuffer(salt);
+  async decrypt(encryptedText: string): Promise<string> {
+    return decryptText(this.requireMasterKey(), encryptedText);
+  }
 
-    return crypto.subtle.deriveKey(
+  private async writeRecovery(
+    uid: string,
+    rawMasterKey: ArrayBuffer,
+    password: string
+  ): Promise<void> {
+    const recovery = await wrapMasterKey(rawMasterKey, password);
+
+    await setDoc(
+      doc(this.db, 'users', uid),
       {
-        name: 'PBKDF2',
-        salt: saltBuffer,
-        iterations: this.PBKDF2_ITERATIONS,
-        hash: 'SHA-256'
+        crypto: {
+          version: 2,
+          kdf: {
+            name: 'PBKDF2',
+            hash: 'SHA-256',
+            iterations: PBKDF2_ITERATIONS,
+          },
+          recovery,
+        },
       },
-      passwordKey,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt']
+      { merge: true }
     );
   }
 
-  private persistKeyBytes(raw: ArrayBuffer): void {
-    try {
-      localStorage.setItem(
-        this.STORAGE_KEY,
-        this.arrayToBase64(new Uint8Array(raw))
+  private async useMasterKey(raw: ArrayBuffer): Promise<void> {
+    this.masterKey = await importMasterKey(raw);
+    this.unlocked.set(true);
+    this.clearLegacyStorage();
+  }
+
+  private async exportMasterKey(): Promise<ArrayBuffer> {
+    if (!this.masterKey) {
+      throw new CryptoError(
+        'KEY_NOT_UNLOCKED',
+        'La clave de cifrado no está desbloqueada.'
       );
-    } catch (err) {
-      console.warn('No se pudo persistir la clave maestra:', err);
     }
+
+    return crypto.subtle.exportKey('raw', this.masterKey);
   }
 
-  private toArrayBuffer(array: Uint8Array): ArrayBuffer {
-    return array.buffer.slice(
-      array.byteOffset,
-      array.byteOffset + array.byteLength
-    ) as ArrayBuffer;
+  private requireMasterKey(): CryptoKey {
+    if (!this.masterKey) {
+      throw new CryptoError(
+        'KEY_NOT_UNLOCKED',
+        'La clave de cifrado no está desbloqueada.'
+      );
+    }
+
+    return this.masterKey;
   }
 
-  private arrayToBase64(array: Uint8Array): string {
-    let binary = '';
-    array.forEach(byte => { binary += String.fromCharCode(byte); });
-    return btoa(binary);
+  private legacyRecovery(stored?: StoredCrypto): WrappedKey | null {
+    if (!stored?.salt || !stored.iv || !stored.wrappedKey) {
+      return null;
+    }
+
+    return {
+      salt: stored.salt,
+      iv: stored.iv,
+      wrappedKey: stored.wrappedKey,
+    };
   }
 
-  private base64ToArray(base64: string): Uint8Array {
-    const binary = atob(base64);
-    return Uint8Array.from(binary, char => char.charCodeAt(0));
+  private clearLegacyStorage(): void {
+    localStorage.removeItem('diary.masterKey.v1');
   }
 }

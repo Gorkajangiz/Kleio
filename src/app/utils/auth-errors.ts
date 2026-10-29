@@ -36,6 +36,10 @@ export function getAuthErrorMessage(error: any): string {
       return 'Este método de autenticación no está habilitado actualmente.';
 
     default:
+      if (error.name === 'CryptoError' && typeof error.message === 'string') {
+        return error.message;
+      }
+
       if (typeof error.message === 'string' && error.message.includes('Firebase:')) {
 
         return error.message.replace(/Firebase:\s*/i, '').trim();

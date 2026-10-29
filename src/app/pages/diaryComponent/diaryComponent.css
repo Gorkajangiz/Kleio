@@ -1207,6 +1207,7 @@
 .settings-modal {
   width: 100%;
   max-width: 480px;
+  max-height: calc(100vh - 48px);
   background: rgba(0, 0, 0, 0.85);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -1252,6 +1253,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  overflow-y: auto;
 }
 
 .settings-section-title {
@@ -1286,6 +1288,26 @@
 .settings-row-desc {
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+.settings-action-btn {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--trans);
+}
+
+.settings-action-btn:hover {
+  border-color: var(--border-focus);
+  background: var(--surface-raised);
+  color: var(--garnet-light);
 }
 
 .settings-toggle {

@@ -1,0 +1,21 @@
+.pin-input {
+  text-align: center;
+  font-size: 28px;
+  letter-spacing: 0.45em;
+  padding: 14px 18px;
+}
+
+.pin-help {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.pin-message {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.pin-message--error {
+  color: var(--star-active);
+}

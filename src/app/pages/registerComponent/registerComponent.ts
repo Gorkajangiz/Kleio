@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../services/auth.service';
+import { CryptoService } from '../../services/crypto.service';
 import { PreferencesService } from '../../services/preference.service';
 import { ToastService } from '../../services/toast.service';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
@@ -17,6 +18,7 @@ import { getAuthErrorMessage } from '../../utils/auth-errors';
 export class RegisterComponent {
   private readonly prefs = inject(PreferencesService);
   private readonly authService = inject(AuthService);
+  private readonly crypto = inject(CryptoService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
@@ -75,9 +77,20 @@ export class RegisterComponent {
     this.isLoading.set(true);
 
     try {
-      await this.authService.register(cleanName, cleanEmail, pass);
-      this.toast.success('¡Tu cuenta ha sido creada exitosamente!', 'Bienvenido a Kleio');
-      await this.router.navigate(['/diario']);
+      const user = await this.authService.register(cleanName, cleanEmail, pass);
+
+      try {
+        await this.crypto.createRecovery(user.uid, pass);
+      } catch (cryptoError) {
+        await this.authService.deleteCurrentUser().catch(() => undefined);
+        throw cryptoError;
+      }
+
+      this.toast.success(
+        'Tu cuenta ha sido creada. Elige un PIN para proteger tu diario.',
+        'Bienvenido a Kleio'
+      );
+      await this.router.navigate(['/pin-setup']);
     } catch (err) {
       console.error('Error al registrar usuario:', err);
       this.toast.error(getAuthErrorMessage(err), 'Error en el registro');

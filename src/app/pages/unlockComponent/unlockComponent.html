@@ -1,0 +1,149 @@
+<div class="login-card">
+  <button
+    type="button"
+    class="theme-toggle"
+    [class.theme-toggle--on]="isCushy()"
+    (click)="toggleTheme()"
+    [attr.aria-label]="isCushy() ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'"
+    [attr.aria-pressed]="isCushy()"
+  >
+    <span class="theme-toggle-knob">
+      <span class="theme-toggle-icon">{{ isCushy() ? '☀' : '☾' }}</span>
+    </span>
+  </button>
+
+  <h1 class="login-title">Diario bloqueado</h1>
+  <p class="login-subtitle">{{ email() || 'Tu cuenta de Kleio' }}</p>
+
+  @if (hasPin() && !showRecovery()) {
+    <form class="login-form" (submit)="unlock($event)">
+      <p class="unlock-help">
+        Introduce tu PIN de 4 dígitos para desbloquear tus entradas.
+      </p>
+
+      <div class="field-group">
+        <label class="field-label" for="pin">PIN del diario</label>
+        <input
+          class="login-input pin-input"
+          id="pin"
+          type="password"
+          inputmode="numeric"
+          maxlength="4"
+          autocomplete="off"
+          placeholder="••••"
+          [value]="pin()"
+          (input)="onPinInput($event)"
+          [disabled]="isLoading() || blockedSeconds() > 0"
+          autofocus
+        />
+      </div>
+
+      @if (blockedSeconds() > 0) {
+        <p class="form-message form-message--error">
+          Demasiados intentos. Espera {{ blockedSeconds() }} s.
+        </p>
+      } @else if (error()) {
+        <p class="form-message form-message--error">{{ error() }}</p>
+      }
+
+      <div class="login-actions">
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="isLoading() || blockedSeconds() > 0"
+        >
+          @if (isLoading()) {
+            <app-spinner size="sm" label="Comprobando PIN..." />
+          } @else {
+            Desbloquear
+          }
+        </button>
+
+        <button
+          type="button"
+          class="cancel-btn"
+          (click)="showRecovery.set(true); error.set('')"
+          [disabled]="isLoading()"
+        >
+          He olvidado mi PIN
+        </button>
+      </div>
+    </form>
+  } @else {
+    <form class="login-form" (submit)="recover($event)">
+      <p class="unlock-help">
+        @if (!hasPin()) {
+          Este dispositivo todavía no tiene un PIN. Introduce la contraseña de
+          tu cuenta para desbloquear el diario una última vez y crear tu PIN.
+        } @else {
+          Introduce la contraseña de tu cuenta. La usaremos solo para recuperar
+          el acceso y crear un nuevo PIN.
+        }
+      </p>
+
+      <div class="field-group">
+        <label class="field-label" for="recoveryPassword">Contraseña de la cuenta</label>
+        <div class="password-input-wrapper">
+          <input
+            class="login-input"
+            [type]="showPassword() ? 'text' : 'password'"
+            id="recoveryPassword"
+            placeholder="Tu contraseña"
+            autocomplete="current-password"
+            [value]="password()"
+            (input)="onPasswordInput($event)"
+            [disabled]="isLoading()"
+          />
+          <button
+            type="button"
+            class="password-toggle-btn"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Ver contraseña'"
+            tabindex="-1"
+          >
+            @if (showPassword()) {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            }
+          </button>
+        </div>
+      </div>
+
+      @if (error()) {
+        <p class="form-message form-message--error">{{ error() }}</p>
+      }
+
+      <div class="login-actions">
+        <button type="submit" class="submit-btn" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <app-spinner size="sm" label="Recuperando acceso..." />
+          } @else {
+            Recuperar acceso
+          }
+        </button>
+
+        @if (hasPin()) {
+          <button
+            type="button"
+            class="cancel-btn"
+            (click)="showRecovery.set(false); error.set('')"
+            [disabled]="isLoading()"
+          >
+            Volver al PIN
+          </button>
+        }
+      </div>
+    </form>
+  }
+
+  <button type="button" class="unlock-logout" (click)="logout()" [disabled]="isLoading()">
+    Cerrar sesión
+  </button>
+</div>

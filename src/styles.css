@@ -4,9 +4,29 @@ html, body {
   height: 100%;
   background: #0f0d0d;
   transition: background-color 200ms ease;
+  overscroll-behavior: none;
 }
 
 body:has(.cushy-theme),
 .cushy-theme {
   background-color: #f8f9f6;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Touch targets on Android native platform */
+.is-android input:not([type="checkbox"]):not([type="radio"]),
+.is-android textarea {
+  min-height: 48px;
+  font-size: 16px;
 }

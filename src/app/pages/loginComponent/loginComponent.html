@@ -63,15 +63,10 @@
       </div>
     </div>
 
-    <label class="checkbox-row">
-      <input
-        type="checkbox"
-        [checked]="keepSession()"
-        (change)="toggleKeepSession()"
-        [disabled]="isLoading()"
-      />
-      <span class="checkbox-label">Mantener sesión iniciada</span>
-    </label>
+    <p class="session-note">
+      Tu cuenta quedará vinculada a este dispositivo. Después usarás tu PIN de
+      4 dígitos para desbloquear el diario.
+    </p>
 
     <div class="login-actions">
       <button

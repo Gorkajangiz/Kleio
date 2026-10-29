@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../services/auth.service';
+import { CryptoService } from '../../services/crypto.service';
 import { PreferencesService } from '../../services/preference.service';
 import { ToastService } from '../../services/toast.service';
 import { SpinnerComponent } from '../../components/spinner/spinner.component';
@@ -20,6 +21,7 @@ import { getAuthErrorMessage } from '../../utils/auth-errors';
 export class LoginComponent {
   private readonly prefs = inject(PreferencesService);
   private readonly authService = inject(AuthService);
+  private readonly crypto = inject(CryptoService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
@@ -28,7 +30,6 @@ export class LoginComponent {
 
   readonly isLoading = signal(false);
   readonly showPassword = signal(false);
-  readonly keepSession = signal(this.prefs.keepSession());
 
   toggleTheme(): void {
     this.prefs.toggleTheme();
@@ -36,12 +37,6 @@ export class LoginComponent {
 
   togglePasswordVisibility(): void {
     this.showPassword.update(v => !v);
-  }
-
-  toggleKeepSession(): void {
-    const nextVal = !this.keepSession();
-    this.keepSession.set(nextVal);
-    this.prefs.setKeepSession(nextVal);
   }
 
   async onLogin(event: Event, email: string, pass: string): Promise<void> {
@@ -62,11 +57,24 @@ export class LoginComponent {
     this.isLoading.set(true);
 
     try {
-      await this.authService.setSessionPersistence(this.keepSession());
-
       await this.authService.login(cleanEmail, pass);
-      this.toast.success('¡Bienvenido de vuelta a Kleio!', 'Sesión iniciada');
-      await this.router.navigate(['/diario']);
+
+      const user = this.authService.getCurrentUser();
+      if (!user) {
+        throw new Error('No se pudo iniciar la sesión.');
+      }
+
+      if (this.crypto.hasLocalPin(user.uid)) {
+        await this.router.navigate(['/unlock']);
+        return;
+      }
+
+      await this.crypto.recoverWithPassword(user.uid, pass);
+      this.toast.info(
+        'Este dispositivo es nuevo. Crea un PIN para desbloquear tu diario.',
+        'Último paso'
+      );
+      await this.router.navigate(['/pin-setup']);
     } catch (err) {
       console.error('Error al iniciar sesión:', err);
       this.toast.error(getAuthErrorMessage(err), 'Error de acceso');

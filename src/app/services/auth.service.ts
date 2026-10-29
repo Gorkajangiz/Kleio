@@ -1,11 +1,12 @@
 import { inject, Injectable } from '@angular/core';
-
 import {
   browserLocalPersistence,
-  browserSessionPersistence,
   createUserWithEmailAndPassword,
+  deleteUser,
+  EmailAuthProvider,
   getAuth,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   setPersistence,
   signInWithEmailAndPassword,
   updateProfile,
@@ -14,58 +15,47 @@ import {
 
 import { app } from '../firebase.config';
 import { CryptoService } from './crypto.service';
-import { PreferencesService } from './preference.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-
   private readonly auth = getAuth(app);
   private readonly crypto = inject(CryptoService);
-  private readonly prefs = inject(PreferencesService);
-
-  private readonly SESSION_FLAG = 'kleio-session-active';
-
-  private async applyPersistence(): Promise<void> {
-    const persistence = this.prefs.keepSession()
-      ? browserLocalPersistence
-      : browserSessionPersistence;
-
-    await setPersistence(this.auth, persistence);
-  }
-
-  async setSessionPersistence(keepSession: boolean): Promise<void> {
-    const persistence = keepSession
-      ? browserLocalPersistence
-      : browserSessionPersistence;
-
-    await setPersistence(this.auth, persistence);
-  }
 
   async login(email: string, password: string) {
-    await this.applyPersistence();
-
-    const credentials = await signInWithEmailAndPassword(this.auth, email, password);
-
-
-
-    sessionStorage.setItem(this.SESSION_FLAG, '1');
-
-    await this.crypto.unlock(credentials.user.uid, password);
-
-    return credentials;
+    await setPersistence(this.auth, browserLocalPersistence);
+    return signInWithEmailAndPassword(this.auth, email, password);
   }
 
   async register(name: string, email: string, password: string) {
-    await this.applyPersistence();
+    await setPersistence(this.auth, browserLocalPersistence);
 
-    const credential = await createUserWithEmailAndPassword(this.auth, email, password);
+    const credential = await createUserWithEmailAndPassword(
+      this.auth,
+      email,
+      password
+    );
     await updateProfile(credential.user, { displayName: name });
-    await this.crypto.setup(credential.user.uid, password);
-
-
-    sessionStorage.setItem(this.SESSION_FLAG, '1');
 
     return credential.user;
+  }
+
+  async reauthenticate(password: string): Promise<User> {
+    const user = this.auth.currentUser;
+    if (!user?.email) {
+      throw new Error('No hay una sesión activa.');
+    }
+
+    const credential = EmailAuthProvider.credential(user.email, password);
+    await reauthenticateWithCredential(user, credential);
+
+    return user;
+  }
+
+  async deleteCurrentUser(): Promise<void> {
+    const user = this.auth.currentUser;
+    if (!user) return;
+
+    await deleteUser(user);
   }
 
   getCurrentUser() {
@@ -76,32 +66,19 @@ export class AuthService {
     return this.auth;
   }
 
-
-  isSessionMarked(): boolean {
-    return sessionStorage.getItem(this.SESSION_FLAG) === '1';
-  }
-
-
-  clearSessionMark(): void {
-    sessionStorage.removeItem(this.SESSION_FLAG);
-  }
-
   waitForAuthReady(): Promise<User | null> {
-    return new Promise(resolve => {
-      const unsub = onAuthStateChanged(this.auth, user => {
-        unsub();
+    return new Promise((resolve) => {
+      const unsubscribe = onAuthStateChanged(this.auth, (user) => {
+        unsubscribe();
         resolve(user);
       });
     });
   }
 
-  async tryRestoreCryptoKey(): Promise<boolean> {
-    return this.crypto.restoreKey();
-  }
-
   async logout(): Promise<void> {
-    this.clearSessionMark();
-    this.crypto.clearKey();
+    // Keep the device PIN envelope so returning to this browser only requires
+    // the PIN again. The encrypted envelope stays protected by the PIN.
+    this.crypto.lock();
     await this.auth.signOut();
   }
 }

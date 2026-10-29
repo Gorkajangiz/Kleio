@@ -73,7 +73,7 @@ export class DiaryComponent implements OnInit {
 
   readonly cushyTheme = computed(() => this.prefs.theme() === 'cushy');
   readonly darkMode = computed(() => this.prefs.theme() === 'dark');
-  readonly keepSession = computed(() => this.prefs.keepSession());
+  readonly userEmail = signal('');
   readonly userPhotoURL = signal<string | null>(null);
   readonly profileMenuOpen = signal(false);
 
@@ -232,8 +232,8 @@ export class DiaryComponent implements OnInit {
     this.isLoadingEntries.set(true);
 
     try {
-      await this.auth.waitForAuthReady();
-      await this.crypto.restoreKey();
+      const user = await this.auth.waitForAuthReady();
+      this.userEmail.set(user?.email ?? '');
       await this.getEntries();
     } catch (err) {
       console.error('Error inicializando el diario:', err);
@@ -668,18 +668,15 @@ export class DiaryComponent implements OnInit {
     return `hsl(50, ${sat}%, ${light}%)`;
   }
 
-  async toggleKeepSession(): Promise<void> {
-    const keepSession = !this.prefs.keepSession();
+  async changePin(): Promise<void> {
+    this.closeSettings();
+    await this.router.navigate(['/pin-setup']);
+  }
 
-    this.prefs.setKeepSession(keepSession);
-    await this.auth.setSessionPersistence(keepSession);
-
-    this.toast.info(
-      keepSession
-        ? 'Permanecerás logueado al cerrar el navegador.'
-        : 'Se te pedirá iniciar sesión cada vez que abras la app.',
-      'Ajustes de sesión'
-    );
+  async lockNow(): Promise<void> {
+    this.crypto.lock();
+    this.closeSettings();
+    await this.router.navigate(['/unlock']);
   }
 
   toggleProfileMenu() {

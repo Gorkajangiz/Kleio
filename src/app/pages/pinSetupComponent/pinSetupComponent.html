@@ -1,0 +1,90 @@
+<div class="login-card">
+  <button
+    type="button"
+    class="theme-toggle"
+    [class.theme-toggle--on]="isCushy()"
+    (click)="toggleTheme()"
+    [attr.aria-label]="isCushy() ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'"
+    [attr.aria-pressed]="isCushy()"
+  >
+    <span class="theme-toggle-knob">
+      <span class="theme-toggle-icon">{{ isCushy() ? '☀' : '☾' }}</span>
+    </span>
+  </button>
+
+  <h1 class="login-title">
+    {{ isChange() ? 'Cambiar PIN' : 'Protege tu diario' }}
+  </h1>
+  <p class="login-subtitle">
+    {{
+      isChange()
+        ? 'Elige un nuevo PIN de 4 dígitos'
+        : 'Crea el PIN que abrirá tus recuerdos'
+    }}
+  </p>
+
+  <form class="login-form" (submit)="onSubmit($event)">
+    <p class="pin-help">
+      Usarás este PIN cada vez que abras Kleio en este dispositivo. No lo
+      compartas con nadie.
+    </p>
+
+    <div class="field-group">
+      <label class="field-label" for="newPin">Nuevo PIN</label>
+      <input
+        class="login-input pin-input"
+        id="newPin"
+        type="password"
+        inputmode="numeric"
+        maxlength="4"
+        autocomplete="new-password"
+        placeholder="••••"
+        [value]="pin()"
+        (input)="onPinInput($event, 'pin')"
+        [disabled]="isLoading()"
+        autofocus
+      />
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" for="confirmPin">Confirmar PIN</label>
+      <input
+        class="login-input pin-input"
+        id="confirmPin"
+        type="password"
+        inputmode="numeric"
+        maxlength="4"
+        autocomplete="new-password"
+        placeholder="••••"
+        [value]="confirmPin()"
+        (input)="onPinInput($event, 'confirm')"
+        [disabled]="isLoading()"
+      />
+    </div>
+
+    @if (error()) {
+      <p class="pin-message pin-message--error">{{ error() }}</p>
+    }
+
+    <div class="login-actions">
+      <button type="submit" class="submit-btn" [disabled]="isLoading()">
+        @if (isLoading()) {
+          <app-spinner size="sm" label="Guardando PIN..." />
+        } @else {
+          {{ isChange() ? 'Actualizar PIN' : 'Crear PIN' }}
+        }
+      </button>
+
+      @if (isChange()) {
+        <button
+          type="button"
+          class="cancel-btn"
+          (click)="cancel()"
+          [disabled]="isLoading()"
+        >
+          Cancelar
+        </button>
+      }
+    </div>
+  </form>
+</div>

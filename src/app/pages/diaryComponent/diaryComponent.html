@@ -301,22 +301,37 @@
                 </button>
               </div>
             </div>
+          </section>
+
+          <section class="settings-section settings-section--divided">
+            <h3 class="settings-section-title">Seguridad</h3>
+
             <div class="settings-row">
               <div class="settings-row-label">
-                <span class="settings-row-title">Mantener sesión iniciada</span>
-                <span class="settings-row-desc">
-                  {{ keepSession()
-                  ? 'Permanecerás logueado al cerrar el navegador'
-                  : 'Se te pedirá iniciar sesión cada vez' }}
-                </span>
+                <span class="settings-row-title">Cuenta vinculada</span>
+                <span class="settings-row-desc">{{ userEmail() || 'Sesión activa' }}</span>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-row-label">
+                <span class="settings-row-title">PIN del diario</span>
+                <span class="settings-row-desc">Protege tus entradas en este dispositivo</span>
               </div>
 
-              <button type="button" class="theme-toggle" [class.theme-toggle--on]="keepSession()"
-                (click)="toggleKeepSession()" [attr.aria-pressed]="keepSession()"
-                [attr.aria-label]="keepSession() ? 'Desactivar sesión persistente' : 'Activar sesión persistente'">
-                <span class="theme-toggle-knob">
-                  <span class="theme-toggle-icon">{{ keepSession() ? '🔒' : '🔓' }}</span>
-                </span>
+              <button type="button" class="settings-action-btn" (click)="changePin()">
+                Cambiar PIN
+              </button>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-row-label">
+                <span class="settings-row-title">Bloquear ahora</span>
+                <span class="settings-row-desc">Pedirá tu PIN para volver a entrar</span>
+              </div>
+
+              <button type="button" class="settings-action-btn" (click)="lockNow()">
+                Bloquear
               </button>
             </div>
           </section>

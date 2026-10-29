@@ -1,0 +1,423 @@
+/*
+ * ─────────────────────────────────────────────────────────
+ *  android-overrides.css
+ *  Ajustes de UI exclusivos para la plataforma Android nativa.
+ *  Se aplican únicamente bajo .is-android.
+ *  La versión web (ng serve) permanece 100% intacta.
+ * ─────────────────────────────────────────────────────────
+ */
+
+/* ── 1. Viewport y Scroll en Android ────────────────────── */
+.is-android,
+.is-android body {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.is-android .page-wrapper {
+  /* Separación cómoda y adecuada respecto a la barra de estado superior */
+  padding-top: calc(env(safe-area-inset-top) + 20px) !important;
+  /* Espacio inferior para ver el submit button antes de la pestaña persiana */
+  padding-bottom: 90px !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  gap: 16px !important;
+  min-height: 100vh !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* ── 2. Top bar: ajustada a móvil con espacio natural ───── */
+.is-android .top-bar {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  margin: 0 0 4px !important;
+  gap: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.is-android .search-wrapper {
+  flex: 1 !important;
+}
+
+.is-android .search-input {
+  font-size: 14.5px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 8px 14px 8px 40px !important;
+  border-radius: 21px !important;
+}
+
+.is-android .icon-btn {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+}
+
+.is-android .profile-btn {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+}
+
+/* ── 3. Título y Subtítulo: espaciados y con texto legible ─ */
+.is-android .entry-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 2px 24px !important;
+  margin: 0 !important;
+  gap: 16px !important;
+}
+
+.is-android .welcome {
+  font-size: 26px !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.02em !important;
+  margin: 4px 0 2px !important;
+  padding: 0 !important;
+}
+
+.is-android .welcomeSub {
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+  letter-spacing: normal !important;
+  margin: 0 !important;
+  padding: 0 0 4px !important;
+  opacity: 0.85 !important;
+}
+
+/* ── 4. Fecha y Estrellas en sus PROPIAS líneas ─────────── */
+.is-android .meta-row {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 16px !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* Línea 1: Fecha */
+.is-android .date-group {
+  width: 100% !important;
+  flex: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+.is-android .date-wrapper {
+  width: 100% !important;
+}
+
+.is-android .date-input-btn {
+  width: 100% !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 10px 14px !important;
+  font-size: 14px !important;
+  border-radius: var(--radius-md, 12px) !important;
+}
+
+/* Línea 2: Estrellas / Calificación */
+.is-android .mood-group {
+  width: 100% !important;
+  flex: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+  top: 0 !important;
+  margin: 0 !important;
+}
+
+.is-android .mood-title-stars-wrapper {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.is-android .field-label {
+  font-size: 11.5px !important;
+  margin-bottom: 4px !important;
+  letter-spacing: 0.06em !important;
+}
+
+.is-android .stars {
+  display: flex !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+
+.is-android .star-btn {
+  font-size: 34px !important;
+  padding: 2px !important;
+  margin-top: 0 !important;
+}
+
+.is-android .mood-rating-text {
+  font-size: 13.5px !important;
+  color: var(--text-secondary) !important;
+  margin-bottom: 2px !important;
+}
+
+/* ── 5. Textbox largo y ergonómico para diario móvil ─────── */
+.is-android .entry-group {
+  width: 100% !important;
+}
+
+.is-android .entry-textarea {
+  width: 100% !important;
+  min-height: 260px !important;
+  height: 290px !important;
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+  padding: 16px !important;
+  border-radius: var(--radius-md, 12px) !important;
+  box-sizing: border-box !important;
+  resize: vertical !important;
+}
+
+.is-android .submit-btn,
+.is-android .cancel-btn {
+  width: 100% !important;
+  min-height: 48px !important;
+  height: 48px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  margin-top: 6px !important;
+}
+
+/* ── 6. Theme Toggle en Login y Register ─────────────────── */
+.is-android .theme-toggle {
+  width: 48px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  border-radius: 999px !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.is-android .theme-toggle-knob {
+  width: 22px !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  max-height: 22px !important;
+  min-width: 22px !important;
+  max-width: 22px !important;
+  border-radius: 50% !important;
+  top: 3px !important;
+  left: 3px !important;
+  box-sizing: border-box !important;
+}
+
+.is-android .password-toggle-btn {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+}
+
+/* ── 7. Ocultar el drawer web y activar la persiana Android ── */
+.is-android .page-wrapper .drawer-shell {
+  display: none !important;
+}
+
+.persiana-body .drawer-panel {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.persiana-body .drawer-toolbar {
+  padding: 8px 16px !important;
+  border-bottom: 1px solid var(--border, #3a2e31) !important;
+  flex-shrink: 0 !important;
+}
+
+:host-context(.cushy-theme) .persiana-body .drawer-toolbar {
+  border-bottom-color: #e2e8df !important;
+}
+
+/* Grid de entradas dentro de la persiana */
+.persiana-body .entries-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 10px !important;
+  padding: 12px 14px 60px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+}
+
+.persiana-body .entry-slot {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.persiana-body .entry-book {
+  width: 100% !important;
+  height: 84px !important;
+  min-height: 84px !important;
+  border-radius: 8px !important;
+  padding: 6px !important;
+}
+
+.persiana-body .entry-book-date-center {
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+}
+
+.persiana-body .entry-book-date {
+  font-size: 11px !important;
+  margin-top: 4px !important;
+}
+
+/* Vista calendario dentro de la persiana */
+.persiana-body .calendar-view {
+  padding: 12px 14px 60px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  gap: 18px !important;
+}
+
+.persiana-body .calendar-day {
+  min-height: 50px !important;
+  padding: 4px !important;
+  font-size: 11px !important;
+}
+
+/* ── 8. Ventana Modal de Entradas Pasadas (Centrada y Scrolleable) ── */
+.is-android .entry-modal-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1000 !important;
+  display: flex !important;
+  align-items: center !important; /* Centrado vertical natural */
+  justify-content: center !important;
+  padding: 20px 16px !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  box-sizing: border-box !important;
+}
+
+.is-android .entry-modal {
+  width: 100% !important;
+  max-width: 440px !important;
+  max-height: 82vh !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-radius: 18px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--entry-modal-bg, var(--surface)) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6) !important;
+  overflow: hidden !important;
+  margin: auto !important;
+}
+
+.is-android .entry-modal-header {
+  padding: 14px 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-bottom: 1px solid var(--border) !important;
+  flex-shrink: 0 !important;
+}
+
+.is-android .entry-modal-date {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+.is-android .entry-modal-close {
+  font-size: 28px !important;
+  padding: 4px 8px !important;
+  min-height: 36px !important;
+  min-width: 36px !important;
+  line-height: 1 !important;
+}
+
+.is-android .entry-modal-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: calc(82vh - 120px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  box-sizing: border-box !important;
+}
+
+.is-android .entry-modal-text {
+  font-size: 15px !important;
+  line-height: 1.65 !important;
+  color: var(--text-primary) !important;
+  white-space: pre-wrap !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+.is-android .entry-modal-split-btn {
+  flex-shrink: 0 !important;
+  margin-top: 0 !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+.is-android .settings-modal-backdrop {
+  z-index: 1000 !important;
+}
+
+.is-android .settings-modal {
+  max-width: calc(100% - 24px) !important;
+  width: 100% !important;
+}
+
+/* ── 9. Transición de ruta suave ────────────────────────── */
+.is-android router-outlet + * {
+  animation: androidRouteSlide 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+@keyframes androidRouteSlide {
+  from {
+    transform: translateX(20px);
+    opacity: 0.9;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
